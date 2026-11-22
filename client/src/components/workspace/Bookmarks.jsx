@@ -1,32 +1,13 @@
-import React, { useEffect } from "react";
 import { useBookmarks } from "../hooks/useBookmarks";
+import BookmarkList from "./BookmarkList";
 
 export default function Bookmarks() {
-  const { bookmarks, loading, error } = useBookmarks();
+  const bookmarkState = useBookmarks();
 
-  useEffect(() => {
-    console.log(bookmarks);
-  }, [bookmarks]);
-
-  if (loading) return <div>Loading...</div>;
-
-  if (error) return <div>Error: {error}</div>;
   return (
-    <div>
-      <h1>Bookmarks</h1>
-      <ul>
-        {bookmarks.map((bookmark) => (
-          <li key={bookmark.questionId}>
-            <a
-              href={bookmark.links?.[0]?.url ?? "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {bookmark.title}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <section className="rounded-xl border border-white/10 bg-[#141414] p-5">
+      <h1 className="mb-4 text-lg font-semibold text-white">Bookmarks</h1>
+      <BookmarkList {...bookmarkState} onCompletionChange={bookmarkState.updateCompletion} />
+    </section>
   );
 }

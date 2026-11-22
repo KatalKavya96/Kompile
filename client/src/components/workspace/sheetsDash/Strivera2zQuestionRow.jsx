@@ -4,6 +4,7 @@ import {
   toggleSheetQuestion,
   toggleBookmarkQuestion,
 } from "../../../api/sheets.api";
+import QuestionCompletionCheckbox from "./QuestionCompletionCheckbox";
 
 const YoutubeIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff0000">
@@ -45,8 +46,7 @@ export default function Strivera2zQuestionRow({ data }) {
   const sheetId = data.sheetId;
   const questionId = data._id;
 
-  const handleToggleProgress = async (e) => {
-    e.stopPropagation();
+  const handleToggleProgress = async () => {
     const prev = completed;
     setCompleted((v) => !v);
     try {
@@ -88,27 +88,11 @@ export default function Strivera2zQuestionRow({ data }) {
 
   const content = (
     <>
-      <button
-        onClick={handleToggleProgress}
-        className="shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200"
-        style={{
-          borderColor: completed ? "#22c55e" : "#4b5563",
-          backgroundColor: completed ? "#22c55e22" : "transparent",
-        }}
-        title={completed ? "Mark incomplete" : "Mark complete"}
-      >
-        {completed && (
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path
-              d="M2 5l2.5 2.5L8 3"
-              stroke="#22c55e"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </button>
+      <QuestionCompletionCheckbox
+        title={data.title ?? data.name}
+        completed={completed}
+        onToggle={handleToggleProgress}
+      />
 
       <span
         className={`flex-1 text-sm font-medium transition-colors duration-200 ${

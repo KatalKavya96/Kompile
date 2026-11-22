@@ -4,6 +4,7 @@ import {
   toggleSheetQuestion,
   toggleBookmarkQuestion,
 } from "../../../api/sheets.api";
+import QuestionCompletionCheckbox from "./QuestionCompletionCheckbox";
 
 const GFGIcon = () => (
   <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
@@ -44,8 +45,7 @@ export default function QuestionRow({ data }) {
   const sheetId = data.sheetId;
   const questionId = data._id;
 
-  const handleToggleProgress = async (e) => {
-    e.preventDefault();
+  const handleToggleProgress = async () => {
     const prev = completed;
     setCompleted((v) => !v);
     try {
@@ -78,27 +78,11 @@ export default function QuestionRow({ data }) {
       rel="noopener noreferrer"
       className="group flex items-center gap-4 bg-[#111111] border border-gray-800 hover:border-orange-500/60 rounded-xl px-4 py-3 cursor-pointer transition-all duration-200 hover:bg-[#161616] no-underline"
     >
-      <button
-        onClick={handleToggleProgress}
-        className="shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200"
-        style={{
-          borderColor: completed ? "#22c55e" : "#4b5563",
-          backgroundColor: completed ? "#22c55e22" : "transparent",
-        }}
-        title={completed ? "Mark incomplete" : "Mark complete"}
-      >
-        {completed && (
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path
-              d="M2 5l2.5 2.5L8 3"
-              stroke="#22c55e"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </button>
+      <QuestionCompletionCheckbox
+        title={data.title}
+        completed={completed}
+        onToggle={handleToggleProgress}
+      />
 
       <span
         className={`flex-1 text-sm font-medium transition-colors duration-200 ${

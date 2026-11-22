@@ -78,29 +78,29 @@ export const toggleQuestionProgress = asyncHandler(async (req, res) => {
   const question = await SheetQuestion.findOne({ _id: questionId, sheetId });
   if (!question) throw new ApiError(404, "Question not found in this sheet");
 
-  const existing = await UserSheetProgress.findOne({
-    userId: req.user._id,
-    sheetId,
-    questionId,
-  });
+  const { completed } = await UserSheetProgress.findOneAndUpdate(
+    { userId: req.user._id, questionId: question._id },
+    [
+      {
+        $set: {
+          sheetId: question.sheetId,
+          completed: { $not: [{ $ifNull: ["$completed", false] }] },
+        },
+      },
+      {
+        $set: { completedAt: { $cond: ["$completed", "$$NOW", null] } },
+      },
+    ],
+    { upsert: true, returnDocument: "after", updatePipeline: true },
+  );
 
-  if (existing) {
-    await existing.deleteOne();
-    return res
-      .status(200)
-      .json(new ApiResponse(200, { completed: false }, "Marked incomplete"));
-  }
-
-  await UserSheetProgress.create({
-    userId: req.user._id,
-    sheetId,
-    questionId,
-    completed: true,
-    completedAt: new Date(),
-  });
-  return res
-    .status(200)
-    .json(new ApiResponse(200, { completed: true }, "Marked complete"));
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { completed },
+      completed ? "Marked complete" : "Marked incomplete",
+    ),
+  );
 });
 
 export const toggleBookmark = asyncHandler(async (req, res) => {
@@ -148,6 +148,7 @@ export const getAllSheets = asyncHandler(async (req, res) => {
       const solved = await UserSheetProgress.countDocuments({
         userId: req.user._id,
         sheetId: sheet._id,
+        completed: true,
       });
       return {
         ...sheet,
@@ -217,6 +218,7 @@ export const getBookmarks = asyncHandler(async (req, res) => {
         platform: "$question.platform",
         links: "$question.links",
         topicName: "$topic.name",
+        completed: { $ifNull: ["$completed", false] },
         bookmarkedAt: "$updatedAt",
       },
     },
@@ -235,6 +237,7 @@ export const getBookmarks = asyncHandler(async (req, res) => {
             platform: "$platform",
             links: "$links",
             topicName: "$topicName",
+            completed: "$completed",
             bookmarkedAt: "$bookmarkedAt",
           },
         },

@@ -1,51 +1,41 @@
 import { CircleCheck, ListChecks } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-function MysheetsCard({ sheet }) {
-  const navigate = useNavigate();
+export default function MysheetsCard({ sheet }) {
   return (
-    <div
-      onClick={() => sheet.slug && navigate(`/workspace/sheets/${sheet.slug}`)}
-      className={`relative bg-[#111111] border border-gray-800  hover:border-t-orange-500 rounded-xl p-2 cursor-pointer group transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden w-120 `}
+    <Link
+      to={`/workspace/sheets/${sheet.slug}`}
+      className="flex min-h-40 min-w-0 flex-col gap-3 rounded-xl border border-gray-800 bg-[#111111] p-4 transition-colors hover:border-orange-500/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-orange-400"
     >
-      <div className="relative h-8 bg-[#2b2b2f] flex">
-        <div
-          className="absolute left-0 top-0 h-full bg-[#ff9d3c]"
-          style={{ width: `${sheet.percentSolved}%` }}
-        ></div>
+      <h2 className="break-words text-lg font-semibold leading-snug text-white">
+        {sheet.name}
+      </h2>
 
-        <span className="absolute right-4 top-2 font-bold text-white">
-          {sheet.percentSolved}%
+      <p className="line-clamp-2 text-sm leading-snug text-gray-400">
+        {sheet.description}
+      </p>
+
+      <div className="mt-auto flex items-center gap-2 pt-1">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#2b2b2f]" aria-hidden="true">
+          <div
+            className="h-full rounded-full bg-[#ff9d3c]"
+            style={{ width: `${sheet.percentSolved}%` }}
+          />
+        </div>
+        <span className="text-xs tabular-nums text-gray-300">{sheet.percentSolved}%</span>
+      </div>
+
+      <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-sm">
+        <span className="flex items-center gap-1.5 text-gray-400">
+          <ListChecks size={17} aria-hidden="true" />
+          {sheet.totalQuestions} Questions
+        </span>
+
+        <span className="flex items-center gap-1.5 font-semibold text-green-400">
+          <CircleCheck size={17} aria-hidden="true" />
+          {sheet.solvedCount} Solved
         </span>
       </div>
-
-      <div className="p-4">
-        <div className="flex justify-between items-start">
-          <h2 className="text-2xl font-bold text-white leading-tight">
-            {sheet.name}
-          </h2>
-        </div>
-
-        <p className="mt-6  text-gray-400 line-clamp-2 leading-relaxed">
-          {sheet.description}
-        </p>
-
-        <hr className="my-4 border-[#3a3a3f]" />
-
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3 text-gray-400">
-            <ListChecks size={22} />
-            <span>{sheet.totalQuestions} Questions</span>
-          </div>
-
-          <div className="flex items-center gap-2 text-green-400 font-semibold">
-            <CircleCheck size={24} />
-            <span>{sheet.solvedCount} Solved</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    </Link>
   );
 }
-
-export default MysheetsCard;

@@ -20,12 +20,12 @@ function Mysheets() {
   }, []);
 
   return (
-    <div className="text-white">
-      <h1 className="text-5xl font-bold mb-10">My Sheets</h1>
+    <div className="@container text-white">
+      <h1 className="mb-6 text-3xl font-bold">My Sheets</h1>
 
-      <div className="flex flex-wrap flex-row gap-4">
-        {sheetsData.map((sheet, index) => (
-          <MysheetsCard key={index} sheet={sheet} />
+      <div className="grid grid-cols-1 gap-4 @min-[28rem]:grid-cols-2 @min-[42rem]:grid-cols-3">
+        {sheetsData.map((sheet) => (
+          <MysheetsCard key={sheet.slug} sheet={sheet} />
         ))}
       </div>
     </div>
