@@ -23,6 +23,7 @@ import UserData from "./components/Profile/UserData.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import Mysheets from "./components/workspace/mysheets/Mysheets.jsx";
 import LoveBabbarSheet from "./components/workspace/sheetsDash/LoveBabbarSheet.jsx";
+import PracticeSheet from "./components/workspace/sheetsDash/PracticeSheet.jsx";
 import StriversA2ZSheet from "./components/workspace/sheetsDash/StriversA2ZSheet.jsx";
 import LoveBabbartopic from "./components/workspace/sheetsDash/LoveBabbartopic.jsx";
 import Community from "./components/workspace/community/Community.jsx";
@@ -192,6 +193,7 @@ function App() {
             element={<LoveBabbartopic />}
           />
           <Route path="sheets/strivers-a2z" element={<StriversA2ZSheet />} />
+          <Route path="sheets/:slug" element={<PracticeSheet />} />
           <Route path="profile" element={<Profile />} />
           <Route path="profile/:username" element={<Profile />} />
           <Route path="community" element={<Community />} />

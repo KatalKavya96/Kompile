@@ -1,3 +1,4 @@
+import SheetBack from "./SheetBack";
 import React from "react";
 import LoveBabbarTopicCard from "./loveBabbartopicCard.jsx";
 import { useEffect, useState } from "react";
@@ -32,6 +33,7 @@ export default function LoveBabbarSheet() {
 
   return (
     <>
+      <SheetBack to="/workspace/sheets">Back to My Sheets</SheetBack>
       <section>
         <div
           className={`relative bg-[#111111] border border-gray-800  hover:border-t-orange-500 rounded-xl p-4 cursor-pointer group transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden  w-full`}

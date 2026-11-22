@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { ArrowUpRight, Info, FileCode2 } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Info, FileCode2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getAllSheetsStats } from "../../api/sheets.api";
 import { getAllCompanies } from "../../api/company.api";
+
+import { useBookmarks } from "../hooks/useBookmarks";
+import BookmarkList from "./BookmarkList";
 
 export default function MyWorkspace() {
   const navigate = useNavigate();
@@ -10,16 +13,31 @@ export default function MyWorkspace() {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const bookmarkedCount = 0;
+  const bookmarkState = useBookmarks();
+  const [statsVersion, setStatsVersion] = useState(0);
+
+  function handleCompletionChange(sheetId, questionId, completed) {
+    bookmarkState.updateCompletion(sheetId, questionId, completed);
+    setStatsVersion((version) => version + 1);
+  }
+  const { bookmarks, loading: bookmarksLoading, error: bookmarksError } =
+    bookmarkState;
+  const bookmarkedCount = bookmarks.reduce(
+    (count, sheet) => count + sheet.questions.length,
+    0,
+  );
 
   useEffect(() => {
+    let active = true;
+
     const fetchAllData = async () => {
-      setLoading(true);
       try {
         const [sheetsRes, companiesRes] = await Promise.allSettled([
           getAllSheetsStats(),
           getAllCompanies(),
         ]);
+
+        if (!active) return;
 
         if (sheetsRes.status === "fulfilled") {
           const rawSheets = sheetsRes.value?.data || sheetsRes.value || [];
@@ -37,12 +55,13 @@ export default function MyWorkspace() {
       } catch (err) {
         console.error("Error fetching workspace stats:", err);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     fetchAllData();
-  }, []);
+    return () => { active = false; };
+  }, [statsVersion]);
 
   // Calculate total questions solved across DSA sheets + company sheets
   const dsaSolved = sheets.reduce(
@@ -86,7 +105,7 @@ export default function MyWorkspace() {
   const allItems = [...dsaItems, ...companyItems];
 
   return (
-    <div className="bg-[#0e0e0e] border border-white/[0.08] rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+    <div className="bg-[#0e0e0e] border border-white/[0.08] rounded-2xl p-6 shadow-2xl relative shrink-0">
       {/* Header */}
       <div
         onClick={() => navigate("/workspace/sheets")}
@@ -122,8 +141,10 @@ export default function MyWorkspace() {
             <Info className="w-3.5 h-3.5 text-gray-500 cursor-pointer hover:text-gray-300 transition-colors" />
           </div>
           <div className="mt-3">
-            {loading ? (
-              <div className="h-9 w-16 bg-white/10 rounded animate-pulse" />
+            {bookmarksLoading ? (
+              <div role="status" aria-label="Loading bookmark count" className="h-9 w-16 bg-white/10 rounded animate-pulse" />
+            ) : bookmarksError ? (
+              <span className="text-sm text-gray-400">Count unavailable</span>
             ) : (
               <span className="text-4xl font-bold font-mono text-white tracking-tight">
                 {bookmarkedCount}
@@ -172,6 +193,16 @@ export default function MyWorkspace() {
           ))
         )}
       </div>
+
+      <details className="group mt-5 rounded-xl border border-white/[0.06] bg-[#141414]">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-gray-200 hover:bg-white/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-orange-400 [&::-webkit-details-marker]:hidden">
+          Bookmarked Questions
+          <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 group-open:rotate-180" />
+        </summary>
+        <div className="border-t border-white/[0.06] px-4 py-3 text-sm text-gray-400">
+          <BookmarkList {...bookmarkState} onCompletionChange={handleCompletionChange} />
+        </div>
+      </details>
     </div>
   );
 }

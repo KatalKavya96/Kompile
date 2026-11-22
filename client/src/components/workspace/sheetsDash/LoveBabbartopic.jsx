@@ -1,3 +1,4 @@
+import SheetBack from "./SheetBack";
 import React from "react";
 import { useParams, useLocation } from "react-router-dom";
 import QuestionRow from "./QuestionRow";
@@ -17,6 +18,7 @@ export default function LoveBabbartopic() {
 
   return (
     <div className="text-white">
+      <SheetBack to="/workspace/sheets/love-babbar-450">Back to Love Babbar Sheet</SheetBack>
       <div className="mb-6">
         <h1 className="text-3xl font-bold">{topicTitle}</h1>
         <p className="text-gray-400 text-sm mt-1">

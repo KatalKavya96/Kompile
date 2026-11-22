@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "seed:companies": "node -e \"import('./src/seeders/runCompanyImport.js')\""
+    "seed:companies": "node -e \"import('./src/seeders/runCompanyImport.js')\"",
+    "seed:master-dsa": "node src/seeders/seedMasterDsa.js"
   },
   "keywords": [],
   "author": "",

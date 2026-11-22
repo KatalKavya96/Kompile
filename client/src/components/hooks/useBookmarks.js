@@ -39,7 +39,24 @@ export const useBookmarks = () => {
     );
   }, []);
 
-  return { bookmarks, loading, error, refresh: fetch, removeQuestion };
+  const updateCompletion = useCallback((sheetId, questionId, completed) => {
+    setBookmarks((previous) =>
+      previous.map((sheet) =>
+        sheet.sheetId === sheetId
+          ? {
+              ...sheet,
+              questions: sheet.questions.map((question) =>
+                question.questionId === questionId
+                  ? { ...question, completed }
+                  : question,
+              ),
+            }
+          : sheet,
+      ),
+    );
+  }, []);
+
+  return { bookmarks, loading, error, refresh: fetch, removeQuestion, updateCompletion };
 };
 
 
