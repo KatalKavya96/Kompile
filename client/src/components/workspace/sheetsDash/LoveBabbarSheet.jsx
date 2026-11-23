@@ -1,11 +1,13 @@
 import SheetBack from "./SheetBack";
+import SheetLoading from "./SheetLoading";
 import React from "react";
 import LoveBabbarTopicCard from "./loveBabbartopicCard.jsx";
 import { useEffect, useState } from "react";
 import { getSheetBySlug } from "../../../api/sheets.api.js";
 import { toast } from "react-hot-toast";
 export default function LoveBabbarSheet() {
-  const [sheets, setSheets] = useState([]);
+  const [sheets, setSheets] = useState(null);
+  const [error, setError] = useState(false);
 
   const fetchSheets = async () => {
     try {
@@ -13,6 +15,7 @@ export default function LoveBabbarSheet() {
       setSheets(res.data);
     } catch (error) {
       console.log(error);
+      setError(true);
       toast.error(error.message);
     }
   };
@@ -30,6 +33,15 @@ export default function LoveBabbarSheet() {
           .replace(/[^\w\s-]/g, "")
           .replace(/\s+/g, "-")
       : "";
+
+  if (error || !sheets) {
+    return (
+      <>
+        <SheetBack to="/workspace/sheets">Back to My Sheets</SheetBack>
+        {error ? <p role="alert">Could not load this sheet.</p> : <SheetLoading />}
+      </>
+    );
+  }
 
   return (
     <>
