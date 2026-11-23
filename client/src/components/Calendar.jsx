@@ -1,4 +1,4 @@
-import React from "react";
+import { useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 
@@ -58,6 +58,19 @@ const formatPlatformName = (domain) => {
 };
 
 export default function Calendar({ eventInfo }) {
+  const positionedAtToday = useRef(false);
+
+  function scrollToToday({ el, isToday }) {
+    if (!isToday || positionedAtToday.current) return;
+
+    requestAnimationFrame(() => {
+      // Wait for FullCalendar to lay out the month grid and its scroll area.
+      if (!el.isConnected || positionedAtToday.current) return;
+      el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+      positionedAtToday.current = true;
+    });
+  }
+
   const events = (eventInfo || []).map((c) => ({
     title: formatPlatformName(c.host),
     start: c.start,
@@ -145,6 +158,10 @@ export default function Calendar({ eventInfo }) {
         }
 
         /* Day cells */
+        .fc .fc-day-today {
+          scroll-margin-top: 88px;
+        }
+
         .fc .fc-daygrid-day-number {
           color: #6b6b6b;
           font-size: 0.8rem;
@@ -177,6 +194,7 @@ export default function Calendar({ eventInfo }) {
         <FullCalendar
           plugins={[dayGridPlugin]}
           initialView="dayGridMonth"
+          dayCellDidMount={scrollToToday}
           headerToolbar={{
             left: "title",
             center: "",

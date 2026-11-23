@@ -1,4 +1,5 @@
 import SheetBack from "./SheetBack";
+import SheetLoading from "./SheetLoading";
 import React from "react";
 import { useEffect, useState } from "react";
 import { getSheetBySlug } from "../../../api/sheets.api.js";
@@ -7,6 +8,7 @@ import StriversA2Ztopics from "./StriversA2Ztopics";
 
 function StriversA2ZSheet() {
   const [rawSheetData, setRawSheetData] = useState(null);
+  const [error, setError] = useState(false);
   const [sheetData, setSheetData] = useState([]);
 
   useEffect(() => {
@@ -30,6 +32,7 @@ function StriversA2ZSheet() {
       setRawSheetData(res.data);
     } catch (error) {
       console.log(error);
+      setError(true);
       toast.error(error.message);
     }
   };
@@ -41,6 +44,15 @@ function StriversA2ZSheet() {
   useEffect(() => {
     console.log("sheetData:", sheetData);
   }, [sheetData]);
+
+  if (error || !rawSheetData) {
+    return (
+      <>
+        <SheetBack to="/workspace/sheets">Back to My Sheets</SheetBack>
+        {error ? <p role="alert">Could not load this sheet.</p> : <SheetLoading />}
+      </>
+    );
+  }
 
   return (
     <>

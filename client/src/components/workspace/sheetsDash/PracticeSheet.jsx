@@ -1,4 +1,5 @@
 import SheetBack from "./SheetBack";
+import SheetLoading from "./SheetLoading";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Play, Star } from "lucide-react";
 import { useParams } from "react-router-dom";
@@ -173,7 +174,7 @@ function SheetContent({ slug }) {
     return (
       <>
         <SheetBack to="/workspace/sheets">Back to My Sheets</SheetBack>
-        {error ? <p role="alert">{error}</p> : <p role="status">Loading sheet…</p>}
+        {error ? <p role="alert">{error}</p> : <SheetLoading />}
       </>
     );
   }
