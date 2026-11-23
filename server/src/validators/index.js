@@ -131,9 +131,9 @@ const roomLeaderboardValidator = () => {
     param("roomId").isMongoId().withMessage("Invalid room ID"),
     query("metric")
       .optional()
-      .isIn(["totalQuestions", "leetcodeRating", "codeforcesRating"])
+      .isIn(["totalQuestions", "leetcodeRating", "codeforcesRating", "contestPoints"])
       .withMessage(
-        "metric must be one of: totalQuestions, leetcodeRating, codeforcesRating",
+        "metric must be one of: totalQuestions, leetcodeRating, codeforcesRating, contestPoints",
       ),
   ];
 };

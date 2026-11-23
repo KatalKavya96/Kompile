@@ -23,6 +23,7 @@ function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const mobileToggleRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
   const handleLogout = async () => {
@@ -53,7 +54,8 @@ function Navbar() {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target) &&
+          !mobileToggleRef.current?.contains(e.target)) {
         setMobileOpen(false);
       }
     };
@@ -79,20 +81,20 @@ function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-black/50 backdrop-blur-md border-b border-gray-800/60 px-6 py-3 flex items-center justify-between h-18 z-50">
+    <nav className="fixed top-0 left-0 w-full bg-black/50 backdrop-blur-md border-b border-gray-800/60 px-6 max-sm:px-3 py-3 flex items-center justify-between h-18 z-50">
       <Link to="/" className="flex items-center gap-2 box-border">
         <img
           src="/assets/face-removebg-preview 1.png"
           alt="logo image"
-          className="w-auto h-15"
+          className="w-auto h-15 max-sm:h-11"
         />
-        <h2 className="text-white font-black text-3xl">
+        <h2 className="text-white font-black text-3xl max-sm:text-2xl">
           Kom<span className="text-orange-500">pile</span>
         </h2>
       </Link>
 
       {/* Desktop nav */}
-      <div className="hidden md:flex items-center gap-8 text-sm">
+      <div className="hidden lg:flex items-center gap-8 text-sm">
         {navLinks.map(({ label, to, end }) => (
           <NavLink key={to} to={to} end={end} className={navLinkCls}>
             {label}
@@ -166,9 +168,11 @@ function Navbar() {
 
       {/* Hamburger button — mobile only */}
       <button
-        className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg border border-gray-700 bg-[#1a1a1a] text-gray-300 hover:text-white hover:border-orange-500/60 transition-all"
+        ref={mobileToggleRef}
+        className="lg:hidden flex items-center justify-center size-11 rounded-lg border border-gray-700 bg-[#1a1a1a] text-gray-300 hover:text-white hover:border-orange-500/60 transition-all"
         onClick={() => setMobileOpen((prev) => !prev)}
         aria-label="Toggle menu"
+        aria-expanded={mobileOpen}
       >
         {mobileOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
@@ -177,7 +181,7 @@ function Navbar() {
       {mobileOpen && (
         <div
           ref={mobileMenuRef}
-          className="md:hidden absolute top-full left-0 w-full bg-black/70 backdrop-blur-md border-b border-gray-800/60 shadow-2xl shadow-black/60 flex flex-col px-6 py-4 gap-1 z-40"
+          className="lg:hidden absolute top-full left-0 w-full bg-black/70 backdrop-blur-md border-b border-gray-800/60 shadow-2xl shadow-black/60 flex max-h-[calc(100dvh-72px)] flex-col overflow-y-auto px-6 py-4 gap-1 z-40"
           style={{ animation: "slideDownMobile 0.2s ease" }}
         >
           <style>{`

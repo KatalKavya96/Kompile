@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getRoom, leaveRoom } from "../../../api/rooms.api.js";
 import { toast } from "react-hot-toast";
@@ -9,24 +9,26 @@ import { Copy, CopyCheck, ArrowLeft, LogOut } from "lucide-react";
 function RoomSpace() {
   const { roomId } = useParams();
   const navigate = useNavigate();
-  const [room, setRoom] = useState(null);
+  const [roomDetail, setRoomDetail] = useState(null);
+  const currentRoom = roomDetail?.room._id === roomId ? roomDetail : null;
+  const room = currentRoom?.room;
+  const admins = currentRoom?.members.filter(({ role }) => role === "admin") ?? [];
   const [activeTabs, setActiveTabs] = useState("leaderboard");
   const [copied, setCopied] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
-  const fetchRoom = useCallback(async () => {
-    try {
-      const result = await getRoom(roomId);
-      setRoom(result.data?.room);
-      toast.success("Room fetched successfully");
-    } catch {
-      toast.error("Failed to fetch room");
-    }
-  }, [roomId]);
-
   useEffect(() => {
-    fetchRoom();
-  }, [fetchRoom]);
+    const controller = new AbortController();
+    getRoom(roomId, controller.signal)
+      .then(({ data }) => {
+        if (!controller.signal.aborted) setRoomDetail(data);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) toast.error("Failed to fetch room");
+      });
+    return () => controller.abort();
+  }, [roomId, activeTabs]);
+
   const tabs = [
     { key: "leaderboard", label: "Leaderboard" },
     { key: "Contest", label: "Contest" },
@@ -58,7 +60,7 @@ function RoomSpace() {
 
   return (
     <>
-      <div className="flex justify-between">
+      <div className="flex justify-between max-sm:gap-2">
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors mb-4 group"
@@ -79,8 +81,18 @@ function RoomSpace() {
           {isLeaving ? "Leaving…" : "Exit Room"}
         </button>
       </div>
-      <div className="flex justify-between">
-        <h1 className="text-4xl font-bold mb-4">{room?.name}</h1>
+      <div className="flex justify-between max-sm:flex-wrap max-sm:gap-2">
+        <div className="mb-4">
+          <h1 className="text-4xl font-bold max-sm:break-all max-sm:text-2xl">{room?.name}</h1>
+          {admins.length > 0 && (
+            <p className="mt-1 text-sm text-gray-300">
+              {admins.map(({ username }) => username).join(", ")}
+              <span className="ml-2 rounded bg-orange-500/10 px-2 py-0.5 font-medium text-[#ff9d3c]">
+                {admins.length === 1 ? "Admin" : "Admins"}
+              </span>
+            </p>
+          )}
+        </div>
         <span className="flex items-center gap-2">
           Invite Code :{" "}
           <span className="text-[#ff9d3c]">{room?.inviteCode}</span>
@@ -93,7 +105,7 @@ function RoomSpace() {
           </button>
         </span>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 max-sm:mt-3">
         {tabs.map(({ key, label }) => (
           <button
             key={key}
@@ -110,7 +122,17 @@ function RoomSpace() {
       </div>
 
       {activeTabs === "leaderboard" && <Community roomId={roomId} />}
-      {activeTabs === "Contest" && <RoomContest roomId={roomId} />}
+      {activeTabs === "Contest" && (
+        <RoomContest key={roomId} roomId={roomId} roomDetail={currentRoom}
+          onPermissionChange={({ userId, canCreateContests }) => setRoomDetail((current) =>
+            current?.room._id === roomId ? {
+              ...current,
+              members: current.members.map((member) => member.userId === userId
+                ? { ...member, canCreateContests }
+                : member),
+            } : current,
+          )} />
+      )}
     </>
   );
 }

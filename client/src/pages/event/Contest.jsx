@@ -76,8 +76,8 @@ export default function Contest() {
         </div>
 
         {/* layout */}
-        <div className="flex w-full gap-6 items-stretch h-[calc(100vh-180px)] min-h-[600px]">
-          <div className="hidden lg:flex w-[320px] xl:w-[400px] bg-[#141414] border border-[#2e2e2e] rounded-xl flex-shrink-0 flex-col overflow-hidden h-full">
+        <div className="flex w-full gap-6 items-stretch xl:h-[calc(100vh-180px)] xl:min-h-[600px] max-xl:flex-col-reverse">
+          <div className="flex w-full xl:w-[400px] max-xl:max-h-[32rem] bg-[#141414] border border-[#2e2e2e] rounded-xl flex-shrink-0 flex-col overflow-hidden h-full">
             <div className="p-5 border-b border-[#2e2e2e] flex-shrink-0">
               <h2 className="text-xl font-bold text-[#e0e0e0]">
                 Upcoming Contest
@@ -122,7 +122,7 @@ export default function Contest() {
             </div>
           </div>
 
-          <div className="flex-1 relative h-full">
+          <div className="flex-1 relative h-full max-xl:min-w-0 max-xl:h-[32rem] max-xl:flex-none">
             {loading ? (
               <div className="flex justify-center items-center h-full bg-[#141414] border border-[#2e2e2e] rounded-xl">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-500"></div>

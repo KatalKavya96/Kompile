@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { LayoutList, Diamond, Zap } from "lucide-react";
+import { LayoutList, Diamond, Trophy, Zap } from "lucide-react";
 import Leaderboard from "./Leaderboard";
 import { useLeaderboard } from "../../hooks/useLeaderboard";
 
@@ -24,24 +24,33 @@ const tabs = [
   },
 ];
 
+const roomTabs = [...tabs, {
+  key: "contestPoints",
+  label: "Contest Points",
+  icon: Trophy,
+  valueLabel: "Points",
+}];
+
 function Community({ roomId = null }) {
   const scope = roomId ? "room" : "global";
   const [selectedTab, setSelectedTab] = useState("totalQuestions");
 
-  const activeTab = tabs.find((t) => t.key === selectedTab);
+  const availableTabs = roomId ? roomTabs : tabs;
+  const activeTab = availableTabs.find((t) => t.key === selectedTab);
 
   const { entries, page, loading, error, hasMore, nextPage, prevPage } =
     useLeaderboard({ scope, roomId, metric: selectedTab, limit: 20 });
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-6 max-sm:px-0">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-white">Leaderboard</h1>
 
-        <div className="flex items-center gap-2">
-          {tabs.map(({ key, label, icon: Icon }) => (
+        <div className="flex flex-wrap items-center gap-2">
+          {availableTabs.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
+              aria-pressed={selectedTab === key}
               onClick={() => setSelectedTab(key)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
                 selectedTab === key

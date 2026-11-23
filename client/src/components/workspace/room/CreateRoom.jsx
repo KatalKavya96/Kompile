@@ -40,12 +40,12 @@ function CreateRoom({ open, setOpen, onSuccess }) {
   return (
     // Backdrop
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm max-sm:p-3"
       onClick={() => setOpen(false)}
     >
       {/* Modal panel — stop click propagation so clicking inside doesn't close */}
       <div
-        className="relative w-full max-w-md bg-[#111111] border border-gray-800 rounded-2xl p-8 shadow-2xl"
+        className="relative w-full max-w-md bg-[#111111] border border-gray-800 rounded-2xl p-8 shadow-2xl max-sm:max-h-[90dvh] max-sm:overflow-y-auto max-sm:p-5"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close */}

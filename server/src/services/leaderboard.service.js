@@ -1,5 +1,29 @@
 import { User } from "../models/user.models.js";
 import { PlatformProfile } from "../models/user.models.js";
+import { RoomContest, RoomContestSolve } from "../models/roomContest.models.js";
+
+export async function buildRoomContestLeaderboard(roomId, memberIds) {
+  const [contestIds, members] = await Promise.all([
+    RoomContest.distinct("_id", { roomId }),
+    User.find({ _id: { $in: memberIds } }).select("username avatar").lean(),
+  ]);
+  const totals = contestIds.length ? await RoomContestSolve.aggregate([
+    { $match: { contestId: { $in: contestIds }, userId: { $in: memberIds } } },
+    { $group: { _id: "$userId", value: { $sum: "$points" } } },
+  ]) : [];
+  const pointsByMember = new Map(totals.map(({ _id, value }) => [String(_id), value]));
+
+  return members
+    .map(({ _id, username, avatar }) => ({
+      userId: _id,
+      username,
+      avatar,
+      value: pointsByMember.get(String(_id)) ?? 0,
+    }))
+    .sort((a, b) => b.value - a.value || a.username.localeCompare(b.username) ||
+      String(a.userId).localeCompare(String(b.userId)))
+    .map((member, index) => ({ ...member, rank: index + 1 }));
+}
 
 const METRICS = {
   totalQuestions: "totalQuestions",

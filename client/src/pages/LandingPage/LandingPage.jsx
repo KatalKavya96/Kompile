@@ -26,7 +26,7 @@ export default function LandingPage() {
         <div className="pt-28 pb-4 px-6 md:px-16 flex flex-col md:flex-row items-center justify-between gap-6 min-h-[100vh]">
           {/* Left column */}
           <div className="md:w-[48%] flex flex-col items-start text-left">
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight leading-[1.05]">
+            <h1 className="text-5xl max-sm:text-4xl md:text-7xl font-extrabold mb-6 tracking-tight leading-[1.05]">
               Track, Analyze <span className="text-orange-500">&</span> Share
             </h1>
             <p className="text-white text-xl md:text-2xl font-bold mb-10 max-w-md leading-snug text-left">
@@ -51,12 +51,11 @@ export default function LandingPage() {
           </div>
 
           {/* Right column — Kompile card showcase */}
-          <div className="md:w-[55%] flex justify-start items-center mt-8 md:mt-0 md:-mb-24 overflow-visible">
+          <div className="max-md:w-full md:w-[55%] flex justify-start items-center mt-8 md:mt-0 md:-mb-24 overflow-visible">
             <img
               src="/assets/landingPage/new_landing.png"
               alt="Kompile Card Showcase"
-              style={{ width: "1000px", maxWidth: "none" }}
-              className="h-auto object-contain drop-shadow-[0_30px_80px_rgba(0,200,0,0.18)]"
+              className="h-auto w-full object-contain md:w-[1000px] md:max-w-none drop-shadow-[0_30px_80px_rgba(0,200,0,0.18)]"
             />
           </div>
         </div>
@@ -131,12 +130,15 @@ export default function LandingPage() {
         </div>
 
         <SimplifyPrepSection />
-        <div className="w-full overflow-hidden pt-48 bg-black">
+        <div className="max-sm:hidden w-full overflow-hidden pt-48 bg-black">
           <MacbookScroll
             title={<span></span>}
             src="/assets/landingPage/WorkSpace.png"
             showGradient={false}
           />
+        </div>
+        <div className="px-4 pt-6 sm:hidden">
+          <img src="/assets/landingPage/WorkSpace.png" alt="Kompile workspace" loading="lazy" className="w-full rounded-xl" />
         </div>
         <section className="bg-transparent text-white px-6 py-24">
           <div className="max-w-7xl mx-auto">

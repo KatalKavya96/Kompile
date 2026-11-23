@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useRef } from "react";
+import { useState, useContext, useEffect } from "react";
 import { UserContext } from "../../context/UserContext";
 import { UserCog, RefreshCw } from "lucide-react";
 import { NavLink, useParams } from "react-router-dom";
@@ -18,12 +18,13 @@ import {
   syncAll,
 } from "../../api/platformApi.js";
 
+const syncToastId = "profile-sync";
+
 function Profile() {
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState("userStats");
-  const { user } = useContext(UserContext);
+  const { user, isAuthLoading } = useContext(UserContext);
   const [isSyncing, setIsSyncing] = useState(false);
-  const hasShownSyncToast = useRef(false);
   const [kompileCardActive, setKompileCardActive] = useState(false);
   const [leetcodeData, setLeetCodeData] = useState();
   const [codeforcesData, setCodeforcesData] = useState();
@@ -60,20 +61,21 @@ function Profile() {
 
   const targetUsername = username || user?.username;
   const isOwner =
-    !username ||
-    (user?.username && username.toLowerCase() === user.username.toLowerCase());
+    Boolean(user?.username) &&
+    (!username || username.toLowerCase() === user.username.toLowerCase());
 
-  const fetchAllStats = async (uname) => {
+  const fetchAllStats = async (uname, isCurrent = () => true) => {
     setIsStatsLoading(true);
     try {
       const [allStatsRes, leetcode, github, codeforces] =
         await Promise.allSettled([
           getAllUserStats(uname),
-          getUserLeetCodeStats(uname),
-          getUserGitHubStats(uname),
-          getUserCodeForcesStats(uname),
+          getUserLeetCodeStats(uname, { cached: true }),
+          getUserGitHubStats(uname, { cached: true }),
+          getUserCodeForcesStats(uname, { cached: true }),
         ]);
 
+      if (!isCurrent()) return;
       setAllStats(
         allStatsRes.status === "fulfilled"
           ? allStatsRes.value.data.stats
@@ -91,7 +93,7 @@ function Profile() {
           : null,
       );
     } finally {
-      setIsStatsLoading(false);
+      if (isCurrent()) setIsStatsLoading(false);
     }
   };
 
@@ -100,20 +102,22 @@ function Profile() {
     setIsSyncing(true);
     try {
       const response = await syncAll();
-      toast.success(response.message || "All profiles synced successfully");
+      if (response.data?.failed) toast.error(response.message, { id: syncToastId });
+      else toast.success(response.message || "All profiles synced successfully", { id: syncToastId });
       await fetchAllStats(targetUsername);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to sync profiles");
+      toast.error(error.response?.data?.message || "Failed to sync profiles", { id: syncToastId });
       console.log("Sync all error:", error);
     } finally {
       setIsSyncing(false);
     }
   };
 
-  const fetchBasicInfo = async (uname) => {
+  const fetchBasicInfo = async (uname, isCurrent) => {
     try {
       const response = await getBasicInfo(uname);
 
+      if (!isCurrent()) return;
       const userObj = response.data.user;
       const names = (userObj.fullname || "").split(" ");
 
@@ -168,31 +172,39 @@ function Profile() {
         githubUsername,
       });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch user data");
+      if (isCurrent()) toast.error(error.response?.data?.message || "Failed to fetch user data");
       console.log("Error while fetching basic info:", error);
     }
   };
 
   useEffect(() => {
-    if (targetUsername) {
-      fetchBasicInfo(targetUsername);
-      fetchAllStats(targetUsername);
+    if (!targetUsername || isAuthLoading) return;
+    let current = true;
+    const isCurrent = () => current;
 
-      if (isOwner && !hasShownSyncToast.current) {
-        hasShownSyncToast.current = true;
-        toast("Please resync your data once today", {
-          icon: "🔄",
-          duration: 4000,
-          style: {
-            borderRadius: "12px",
-            background: "#1c1c1c",
-            color: "#fff",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-          },
-        });
+    async function loadStats() {
+      setIsStatsLoading(true);
+      if (isOwner) {
+        setIsSyncing(true);
+        try {
+          const response = await syncAll({
+            onlyIfDue: true,
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          });
+          if (current && response.data?.failed) toast.error(response.message, { id: syncToastId });
+        } catch (error) {
+          if (current) toast.error(error.response?.data?.message || "Automatic profile sync failed", { id: syncToastId });
+        } finally {
+          if (current) setIsSyncing(false);
+        }
       }
+      if (current) await fetchAllStats(targetUsername, isCurrent);
     }
-  }, [targetUsername, isOwner]);
+
+    fetchBasicInfo(targetUsername, isCurrent);
+    loadStats();
+    return () => { current = false; };
+  }, [targetUsername, isOwner, isAuthLoading]);
 
   return (
     <div className="w-full pb-6 max-w-[1600px] mx-auto">
@@ -212,7 +224,7 @@ function Profile() {
           </div>
         ) : (
           <div className="flex-1 min-w-0 w-full bg-[#141414] rounded-2xl h-full border border-white/[0.08] p-6 text-white flex flex-col shadow-xl">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 max-sm:flex-wrap max-sm:gap-2">
               <div>
                 <p className="text-2xl">Profile</p>
               </div>
@@ -238,7 +250,7 @@ function Profile() {
               )}
             </div>
 
-            <div className="flex gap-1 border-b border-[#2e2e2e] mb-6">
+            <div className="flex gap-1 max-sm:flex-wrap border-b border-[#2e2e2e] mb-6">
               <button
                 onClick={() => setActiveTab("userStats")}
                 className={`px-5 py-2 text-sm font-medium transition-all duration-200 border-b-2 -mb-px ${
@@ -290,6 +302,7 @@ function Profile() {
                 <>
                   {activeTab === "userStats" && (
                     <UserStats
+                      isOwner={isOwner}
                       allStats={allStats}
                       techStack={userData.skills}
                       noPlatformsLinked={
@@ -301,18 +314,21 @@ function Profile() {
                   )}
                   {activeTab === "leetcode" && (
                     <LeetcodeData
+                      isOwner={isOwner}
                       LeetcodeData={leetcodeData}
                       userName={userData.leetcodeUsername}
                     />
                   )}
                   {activeTab === "codeforces" && (
                     <CodeforcesData
+                      isOwner={isOwner}
                       CodeforcesData={codeforcesData}
                       userName={userData.codeforcesUsername}
                     />
                   )}
                   {activeTab === "github" && (
                     <GithubData
+                      isOwner={isOwner}
                       githubData={githubData}
                       userName={userData.githubUsername}
                     />

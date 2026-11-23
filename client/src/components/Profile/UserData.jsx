@@ -162,8 +162,9 @@ function UserData() {
 
       const syncToast = toast.loading("Syncing profiles...");
       try {
-        await syncAll();
-        toast.success("Profiles synced!", { id: syncToast });
+        const result = await syncAll();
+        if (result.data?.failed) toast.error(result.message, { id: syncToast });
+        else toast.success("Profiles synced!", { id: syncToast });
       } catch (syncError) {
         toast.error("Sync failed — try again from your profile", {
           id: syncToast,
@@ -183,8 +184,8 @@ function UserData() {
     <>
       <Navbar />
       <GridComponent>
-        <div className="w-full min-h-screen pt-24 pb-10 px-4 md:px-8 max-w-[1400px] mx-auto text-white flex gap-10 items-start self-start">
-          <div className="w-64 shrink-0 flex flex-col gap-2">
+        <div className="w-full min-h-screen pt-24 pb-10 px-4 md:px-8 max-w-[1400px] mx-auto text-white flex gap-10 items-start self-start max-md:flex-col max-md:gap-4">
+          <div className="w-64 shrink-0 flex flex-col gap-2 max-md:w-full">
             <NavLink
               to={`/workspace/profile/${user?.username ?? ""}`}
               className="mb-6 w-fit"
@@ -208,7 +209,7 @@ function UserData() {
             </button>
           </div>
 
-          <div className="flex-1">
+          <div className="flex-1 max-md:w-full max-md:min-w-0">
             {activeTab === "basicInfo" ? (
               <BasicInfoForm
                 formData={formData}

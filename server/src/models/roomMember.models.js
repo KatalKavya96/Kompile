@@ -16,6 +16,7 @@ const roomMemberSchema = new Schema(
       enum: ["admin", "member"],
       default: "member",
     },
+    canCreateContests: { type: Boolean, default: false },
     joinedAt: {
       type: Date,
       default: Date.now,

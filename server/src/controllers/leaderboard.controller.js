@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/async-handler.js";
 import { ApiError } from "../utils/api-error.js";
 import { ApiResponse } from "../utils/api-response.js";
-import { buildLeaderboard } from "../services/leaderboard.service.js";
+import { buildLeaderboard, buildRoomContestLeaderboard } from "../services/leaderboard.service.js";
 import { RoomMember } from "../models/roomMember.models.js";
 
 export const getGlobalLeaderboard = asyncHandler(async (req, res) => {
@@ -32,12 +32,14 @@ export const getRoomLeaderboard = asyncHandler(async (req, res) => {
   const members = await RoomMember.find({ roomId }).select("userId").lean();
   const memberIds = members.map((member) => member.userId);
 
-  const leaderboard = await buildLeaderboard({
-    metric,
-    userIds: memberIds,
-    page: 1,
-    limit: memberIds.length || 1,
-  });
+  const leaderboard = metric === "contestPoints"
+    ? await buildRoomContestLeaderboard(roomId, memberIds)
+    : await buildLeaderboard({
+        metric,
+        userIds: memberIds,
+        page: 1,
+        limit: memberIds.length || 1,
+      });
 
   return res
     .status(200)
