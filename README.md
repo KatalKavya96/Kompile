@@ -1,351 +1,94 @@
-<div align="center">
+# Kompile
 
-# 🦊 Kompile
+Kompile brings competitive programming profiles, DSA practice, interview preparation, and room contests into one workspace.
 
-**Your all-in-one competitive programming & development dashboard.**
+## Features
 
-A full-stack platform that aggregates stats from LeetCode, Codeforces, and GitHub, tracks DSA sheet progress, surfaces upcoming contest alerts, and provides curated company-wise question kits — keeping your entire coding journey in one place.
+### Profile Tracker
 
-[![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+- Combine LeetCode, Codeforces, and GitHub stats in a public profile with activity heatmaps, problem counts by difficulty, topic and language breakdowns, competitive ratings, and GitHub contribution stats.
+- Your first visit to your own profile each day automatically syncs connected platforms that have yet to sync successfully that day. The daily check uses your browser’s time zone and skips platforms without a saved username. You can also sync manually and see which platform failed if a sync runs into an error.
+- Update your bio, education, skills, social links, and platform usernames in account settings. Profile editing and platform setup controls are available to the owner.
+- Open the Kompile Card for a compact summary of your developer profile and activity.
 
-[Features](#-features) · [Tech Stack](#-tech-stack) · [API Routes](#-api-reference) · [Database](#-database-schema) · [Getting Started](#-getting-started)
+### Practice and workspace
 
-</div>
+- Track progress through Striver A2Z, Love Babbar, Master DSA, and Advanced DSA. Browse by topic, mark questions complete, and bookmark questions for review.
+- Practice with company-wise question kits for employers such as Google, Amazon, Meta, and Microsoft. Search and filter questions, sort by frequency, track completion, and review topic and difficulty analytics.
+- Review recent practice activity and saved questions, manage daily missions with priorities and completion tracking, and see your sign-in history on the workspace calendar.
 
----
+### Contest Tracker
 
-## 📌 Problem Statement
+- Browse upcoming programming contests in a calendar and event list. Open the original contest page to learn more or register, and see in-app alerts for contests happening today.
 
-Developers and competitive programmers often juggle 4–5 different tabs just to check their stats — LeetCode for DSA progress, Codeforces for ratings, GitHub for contributions, and multiple sites for upcoming contests.
+### Community and rooms
 
-**Kompile** solves this by providing a unified platform for live tracking, instant alerts, and complete visibility into your coding journey — all from a single dashboard.
+- Compare total solved questions, LeetCode ratings, and Codeforces ratings on the community and room leaderboards.
+- Create rooms or join with an invite code. Each room shows its admins, who can grant or revoke contest creation access for individual members.
+- Schedule a room contest by setting its start time, duration, question count, and points per Easy, Medium, and Hard solve. Any difficulty can award zero points.
+- Select LeetCode questions from Love Babbar, Master DSA, and Advanced DSA. Filter by sheet, topic, or difficulty, search by title, and open questions in a new tab while selecting them.
+- Questions unlock when the contest starts. A room admin or the contest creator can end a live contest early.
+- Use **Verify solve** to check the 10 most recent accepted submissions for your saved LeetCode username. Each question scores once, and only submissions made during the contest qualify. Verification stays open for three minutes after the contest ends.
+- Follow the contest leaderboard as verified points come in. It refreshes every 15 seconds while scoring is open, and tied scores favor the member who reached the score earlier. The room’s **Contest Points** leaderboard adds each member’s verified points across all contests in that room.
 
----
+### Accounts and display
 
-## ✨ Features
+- Sign in with Google or email and password. Email accounts support verification, password changes, and password recovery.
+- Use the workspace on desktop, tablet, or phone. On smaller screens, workspace navigation collapses and room leaderboards and contest forms adapt to the viewport.
 
-| Feature | Description |
-|---|---|
-| 🧑‍💻 **Profile Dashboard** | Aggregates stats from LeetCode, Codeforces, and GitHub into a unified profile with difficulty breakdowns, contest ratings, heatmaps, and recent submissions |
-| 📅 **Contest Calendar** | Never miss a contest — pulls upcoming events from Codeforces, AtCoder, CodeChef, GeeksforGeeks, and more with one-click "Add to Calendar" |
-| 📚 **DSA Sheets** | Full-featured sheet tracker (Striver A2Z, Love Babbar, etc.) with per-question completion toggling, bookmarking, and topic-level progress bars |
-| 🏢 **Company-Wise Kits** | Curated question sets for top companies like Google, Amazon, Meta, and Microsoft — filterable by difficulty, topic, and platform |
-| 📊 **Dev Stats** | Syncs with GitHub to display language usage, commit history, PRs, stars, and contribution streaks |
-| 🔐 **Full Auth System** | Email/password registration with email verification, JWT access + refresh token rotation, and forgot/reset password flows |
-| 🪪 **Kompile Card** | A shareable public developer card that aggregates your scores and serves as your verified coding identity |
+## Tech stack
 
----
+- **Frontend** uses React, Vite, React Router, Tailwind CSS, Axios, and Lucide.
+- **Backend** uses Node.js, Express, MongoDB, and Mongoose. Authentication uses JWTs, HttpOnly cookies, bcrypt, and Passport for Google sign-in.
+- **Integrations** include LeetCode GraphQL, Codeforces REST, GitHub GraphQL, CLIST for contest listings, and Resend for email.
 
-## 🛠 Tech Stack
+## Getting started
 
-### Frontend
-
-| Technology | Purpose |
-|---|---|
-| **React 18** | UI library with hooks-based state management |
-| **Vite** | Lightning-fast dev server and bundler |
-| **React Router v6** | Client-side routing with nested layouts |
-| **Tailwind CSS** | Utility-first CSS framework |
-| **Axios** | HTTP client with a custom `axiosInstance` (base URL + credentials) |
-| **Lucide React** | Icon library |
-
-### Backend
-
-| Technology | Purpose |
-|---|---|
-| **Node.js + Express** | REST API server |
-| **MongoDB + Mongoose** | Primary database with schema validation |
-| **JSON Web Tokens (JWT)** | Stateless auth — short-lived access tokens + refresh token rotation |
-| **bcrypt** | Password hashing |
-| **cookie-parser** | HttpOnly cookie handling for refresh tokens |
-| **express-validator** | Request body validation middleware |
-| **Nodemailer** | Email delivery for verification and password reset |
-
-### External APIs
-
-| Platform | Data Fetched |
-|---|---|
-| **LeetCode** (GraphQL) | Total solved, difficulty breakdown, contest rating, heatmap, recent AC submissions, topic analysis |
-| **Codeforces** (REST) | Rating, contests attended, problems solved |
-| **GitHub** (REST + GraphQL) | Contributions, commits, PRs, stars, language breakdown, streaks |
-
----
-
-## 📡 API Reference
-
-All routes are prefixed with `/api/v1`. Protected routes (✅) require a valid JWT in an `Authorization: Bearer <token>` header or HttpOnly cookie.
-
-### Auth — `/api/v1/auth`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/register` | ─ | Create a new account |
-| `POST` | `/login` | ─ | Login — receive access + refresh tokens |
-| `GET` | `/verify-email/:token` | ─ | Verify email address |
-| `POST` | `/refresh-token` | ─ | Rotate access token using refresh token |
-| `POST` | `/forgot-password` | ─ | Send password reset email |
-| `POST` | `/reset-password/:token` | ─ | Set new password via reset token |
-| `POST` | `/logout` | ✅ | Invalidate session and clear tokens |
-| `GET` | `/current-user` | ✅ | Get the currently authenticated user |
-| `POST` | `/change-password` | ✅ | Change password (requires current password) |
-| `POST` | `/resend-email-verification` | ✅ | Resend the verification email |
-
-### Users — `/api/v1/users`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `GET` | `/profile/:username` | ─ | Get full public profile by username |
-| `GET` | `/get-basic-info` | ✅ | Get own basic profile info |
-| `GET` | `/get-basic-info/:username` | ─ | Get basic info for any user |
-| `PUT` | `/update-basic-info` | ✅ | Update bio, education, socials, tech stack |
-| `GET` | `/stats` | ✅ | Get own aggregated platform stats |
-
-### Platforms — `/api/v1/platforms`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/sync/leetcode` | ✅ | Sync LeetCode profile data |
-| `POST` | `/sync/codeforces` | ✅ | Sync Codeforces profile data |
-| `POST` | `/sync/github` | ✅ | Sync GitHub profile data |
-| `POST` | `/sync/all` | ✅ | Sync all connected platforms at once |
-| `GET` | `/stats` | ✅ | Get aggregated stats across all platforms (own) |
-| `GET` | `/stats/:username` | ─ | Get aggregated stats for any user |
-| `GET` | `/:platform` | ✅ | Get data for a specific platform (own) |
-| `GET` | `/:platform/:username` | ─ | Get platform data for any user |
-
-### Sheets — `/api/v1/sheets`
-
-All sheet routes require authentication.
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/` | List all sheets with the user's overall progress |
-| `GET` | `/:slug` | Get sheet details — topics, questions, and per-question progress |
-| `PATCH` | `/:sheetId/questions/:questionId/toggle` | Toggle question completion (done ↔ undone) |
-| `PATCH` | `/:sheetId/questions/:questionId/bookmark` | Toggle question bookmark |
-
----
-
-## 🗄 Database Schema
-
-Kompile uses **MongoDB** with 6 core collections. The core design principle is **shared master data, sparse user data** — questions are stored once; per-user state (completion, bookmarks) only creates a document when a user interacts with it.
-
-```mermaid
-erDiagram
-    users {
-        ObjectId _id PK
-        string username UK
-        string email UK
-        string fullname
-        string password
-        boolean isEmailVerified
-        string bio
-        string country
-        string[] techStack
-        object education
-        object socialLinks
-        object[] connectedPlatforms
-        object stats
-    }
-
-    platformProfiles {
-        ObjectId _id PK
-        ObjectId userId FK
-        string platform
-        string handle
-        string profileUrl
-        object stats
-        object[] languages
-        object[] topicAnalysis
-        object[] heatmap
-        object[] recentAcSubmissions
-        date lastSyncedAt
-        string syncStatus
-    }
-
-    sheets {
-        ObjectId _id PK
-        string name
-        string slug UK
-        string description
-        number totalQuestions
-        string source
-    }
-
-    sheetTopics {
-        ObjectId _id PK
-        ObjectId sheetId FK
-        ObjectId parentTopicId FK
-        string code
-        string name
-        number order
-    }
-
-    sheetQuestions {
-        ObjectId _id PK
-        ObjectId sheetId FK
-        ObjectId topicId FK
-        string title
-        string difficulty
-        string platform
-        object links
-        number order
-    }
-
-    userSheetProgress {
-        ObjectId _id PK
-        ObjectId userId FK
-        ObjectId sheetId FK
-        ObjectId questionId FK
-        boolean completed
-        boolean bookmarked
-        date completedAt
-    }
-
-    users ||--o{ platformProfiles : "has synced profiles"
-    users ||--o{ userSheetProgress : "tracks progress"
-    sheets ||--o{ sheetTopics : "organized into"
-    sheets ||--o{ sheetQuestions : "contains"
-    sheetTopics ||--o{ sheetQuestions : "groups"
-    sheetQuestions ||--o{ userSheetProgress : "tracked by"
-```
-
-### Collection Summary
-
-| Collection | Written By | Key Index |
-|---|---|---|
-| `users` | Auth flow, profile edits | `username`, `email` (unique) |
-| `platformProfiles` | Platform sync jobs (upsert) | `{ userId, platform }` unique compound |
-| `sheets` | Admin / seed scripts | `slug` (unique) |
-| `sheetTopics` | Admin / seed scripts | `{ sheetId, parentTopicId, order }` |
-| `sheetQuestions` | Admin / seed scripts | `{ sheetId, order }` |
-| `userSheetProgress` | User question interactions | `{ userId, questionId }` unique compound |
-
-> **Sparse progress pattern:** `userSheetProgress` is never pre-populated for all questions. A document is created only when a user first marks a question done or bookmarks it — storage stays proportional to actual usage, not the total question bank size.
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js ≥ 18
-- MongoDB (local or Atlas URI)
-- npm
-
-### 1. Clone the repository
+Use Node.js 22.12 or later, npm, and a local or hosted MongoDB instance.
 
 ```bash
-git clone https://github.com/your-username/Kompile.git
+git clone https://github.com/sarthak-gupta229/Kompile.git
 cd Kompile
 ```
 
-### 2. Configure the server
+Create `server/.env` and replace the placeholders with your own configuration.
 
-```bash
-cd server
-cp .env.example .env
-```
-
-Update `.env` with your values:
-
-```env
+```dotenv
 PORT=8000
-MONGODB_URI=mongodb://localhost:27017/kompile
+MONGO_URL=mongodb://localhost:27017/kompile
 CORS_ORIGIN=http://localhost:5173
-
-ACCESS_TOKEN_SECRET=your_access_token_secret
+CLIENT_URL=http://localhost:5173
+ACCESS_TOKEN_SECRET=replace_with_a_long_random_secret
 ACCESS_TOKEN_EXPIRY=15m
-REFRESH_TOKEN_SECRET=your_refresh_token_secret
+REFRESH_TOKEN_SECRET=replace_with_a_different_long_random_secret
 REFRESH_TOKEN_EXPIRY=7d
-
-# Email (Nodemailer)
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_USER=you@example.com
-SMTP_PASS=your_smtp_password
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:8000/api/v1/auth/google/callback
 ```
 
-### 3. Configure the client
+Register the same callback URL in your Google OAuth client. Set `RESEND_API_KEY` for email, `GITHUB_ACCESS_TOKEN` for GitHub stats, and `CLIST_USERNAME` and `CLIST_API_KEY` for the public contest calendar.
 
-```bash
-cd ../client
-cp .env.example .env
-```
+Create `client/.env` with the backend base URL.
 
-```env
+```dotenv
 VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
-### 4. Install dependencies & run
+Install dependencies and start the server and client in separate terminals from the repository root.
 
 ```bash
-# Terminal 1 — API server
-cd server && npm install && npm run dev
-
-# Terminal 2 — Frontend
-cd client && npm install && npm run dev
+# Terminal 1
+cd server
+npm ci
+npm run dev
 ```
 
-| Service | URL |
-|---|---|
-| Frontend | http://localhost:5173 |
-| API | http://localhost:8000/api/v1 |
-| Healthcheck | http://localhost:8000/api/v1/healthcheck |
-
----
-
-## 📁 Project Structure
-
-```
-Kompile/
-├── client/                      # React + Vite frontend
-│   └── src/
-│       ├── api/                 # Axios instance & per-feature API modules
-│       │   ├── axiosInstance.js
-│       │   ├── auth.api.js
-│       │   ├── sheets.api.js
-│       │   └── platformApi.js
-│       ├── components/          # Reusable & feature-specific components
-│       │   ├── workspace/       # DSA sheet workspace UI
-│       │   ├── CompanyWiseKit/  # Company kit UI
-│       │   └── Profile/         # Profile page components
-│       ├── pages/               # Route-level page components
-│       │   ├── auth/
-│       │   ├── Workspace/
-│       │   ├── profile/
-│       │   ├── CompanyWiseKit/
-│       │   └── event/
-│       └── context/             # React context providers
-│
-└── server/                      # Express + MongoDB backend
-    └── src/
-        ├── controllers/         # Route handler logic
-        ├── models/              # Mongoose schemas (User, PlatformProfile, Sheet, …)
-        ├── routes/              # Express routers
-        ├── middlewares/         # verifyJWT, validate, error handler
-        ├── validators/          # express-validator rule sets
-        ├── services/            # Platform sync services
-        ├── transformers/        # Platform API response normalizers
-        └── utils/               # ApiResponse, ApiError, asyncHandler
+```bash
+# Terminal 2
+cd client
+npm ci
+npm run dev
 ```
 
----
-
-## 📄 License
-
-Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
-
----
-
-<div align="center">
-
-_Built for coders, by coders._
-
-</div>
+Open [localhost:5173](http://localhost:5173). On a fresh database, run `npm run seed:master-dsa` and `npm run seed:companies` from `server` to import the bundled Master DSA, Advanced DSA, and company question data. The Love Babbar and Striver A2Z migrations read from existing MongoDB source collections.
