@@ -31,9 +31,9 @@ function InitialsAvatar({ username, size = "sm", borderClass = "" }) {
   const { bg, text } = getColor(username);
   const sizeClass =
     size === "lg"
-      ? "w-24 h-24 text-2xl"
+      ? "w-24 h-24 text-2xl max-sm:size-10 max-sm:text-sm"
       : size === "md"
-        ? "w-14 h-14 text-base"
+        ? "w-14 h-14 text-base max-sm:size-8 max-sm:text-xs"
         : "w-8 h-8 text-xs";
   return (
     <div
@@ -95,7 +95,7 @@ function Leaderboard({
   const navigate = useNavigate();
   if (loading) {
     return (
-      <div className={`px-6 pb-6 ${className}`}>
+      <div className={`px-6 pb-6 max-sm:px-0 ${className}`}>
         <div className="flex items-center justify-center h-64 text-gray-500 text-sm animate-pulse">
           Loading leaderboard…
         </div>
@@ -105,7 +105,7 @@ function Leaderboard({
 
   if (error) {
     return (
-      <div className={`px-6 pb-6 ${className}`}>
+      <div className={`px-6 pb-6 max-sm:px-0 ${className}`}>
         <div className="flex items-center justify-center h-64 text-red-400 text-sm">
           {error}
         </div>
@@ -116,9 +116,9 @@ function Leaderboard({
   const rows = data;
 
   return (
-    <div className={`px-6 pb-6 ${className}`}>
+    <div className={`px-6 pb-6 max-sm:px-0 ${className}`}>
       {/* Top 3  */}
-      <div className="grid grid-cols-3 gap-6 mb-8 max-w-4xl mx-auto items-end">
+      <div className="grid grid-cols-3 gap-6 mb-8 max-w-4xl mx-auto items-end max-sm:gap-2 max-sm:mb-5 max-sm:mt-4">
         {[rows[1], rows[0], rows[2]].map((user, i) => {
           if (!user) return null;
           const actualRank = i === 0 ? 2 : i === 1 ? 1 : 3;
@@ -127,15 +127,15 @@ function Leaderboard({
           return (
             <div
               key={user.userId}
-              className={`relative flex flex-col items-center rounded-xl border ${config.border} bg-[#111111] ${
+              className={`relative flex flex-col items-center rounded-xl border max-sm:min-w-0 max-sm:px-1.5 ${config.border} bg-[#111111] ${
                 actualRank === 1
-                  ? "gap-3 p-8 pt-10 scale-105 shadow-2xl shadow-yellow-500/10"
-                  : "gap-2 p-6 pt-8"
+                  ? "gap-3 p-8 pt-10 scale-105 max-sm:scale-100 max-sm:gap-1.5 max-sm:pb-3 max-sm:pt-5 shadow-2xl shadow-yellow-500/10"
+                  : "gap-2 p-6 pt-8 max-sm:gap-1.5 max-sm:pb-3 max-sm:pt-4"
               }`}
             >
               {actualRank === 1 && (
                 <div className="absolute -top-5 left-1/2 -translate-x-1/2">
-                  <span className="text-6xl">👑</span>
+                  <span className="text-6xl max-sm:text-3xl">👑</span>
                 </div>
               )}
               <InitialsAvatar
@@ -169,10 +169,10 @@ function Leaderboard({
       </div>
 
       <div className="bg-[#111111] border border-gray-800 rounded-xl overflow-hidden">
-        <div className="grid grid-cols-12 px-5 py-3 border-b border-gray-800 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <div className="grid grid-cols-12 px-5 max-sm:grid-cols-[2.75rem_minmax(0,1fr)_minmax(4rem,auto)] max-sm:px-2 py-3 border-b border-gray-800 text-xs font-semibold text-gray-500 uppercase tracking-wider">
           <div className="col-span-1">Rank</div>
-          <div className="col-span-7">User</div>
-          <div className="col-span-4 text-right">{valueLabel}</div>
+          <div className="col-span-7 max-sm:col-span-1">User</div>
+          <div className="col-span-4 max-sm:col-span-1 text-right">{valueLabel}</div>
         </div>
 
         <div className="divide-y divide-gray-800/60">
@@ -180,7 +180,7 @@ function Leaderboard({
             <div
               key={user.userId}
               onClick={() => navigate(`/workspace/profile/${user.username}`)}
-              className={`grid grid-cols-12 px-5 py-3.5 items-center transition-colors duration-150 hover:bg-white/[0.02] group cursor-pointer ${
+              className={`grid grid-cols-12 px-5 max-sm:grid-cols-[2.75rem_minmax(0,1fr)_minmax(4rem,auto)] max-sm:px-2 py-3.5 items-center transition-colors duration-150 hover:bg-white/[0.02] group cursor-pointer ${
                 idx < 3 ? "bg-white/[0.01]" : ""
               }`}
             >
@@ -188,14 +188,14 @@ function Leaderboard({
                 <RankBadge rank={user.rank} />
               </div>
 
-              <div className="col-span-7 flex items-center gap-3">
+              <div className="col-span-7 max-sm:col-span-1 flex items-center gap-3 max-sm:min-w-0 max-sm:gap-1.5">
                 <InitialsAvatar username={user.username} size="sm" />
-                <span className="text-white font-medium text-sm group-hover:text-orange-400 transition-colors">
+                <span className="text-white font-medium text-sm max-sm:truncate group-hover:text-orange-400 transition-colors">
                   {user.username}
                 </span>
               </div>
 
-              <div className="col-span-4 text-right">
+              <div className="col-span-4 max-sm:col-span-1 text-right">
                 <span
                   className={`text-sm font-bold ${
                     user.rank === 1

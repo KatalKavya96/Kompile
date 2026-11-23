@@ -21,22 +21,24 @@ const languageColors = {
   Shell: "#89e051",
 };
 
-function GithubData({ githubData, userName }) {
+function GithubData({ githubData, userName, isOwner = false }) {
   if (!userName) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 w-full h-56 bg-[#0d0d0d] rounded-xl border border-[#2e2e2e]">
         <img src="/assets/platformLogos/github-logo.png" alt="GitHub" className="w-10 h-10 opacity-40" />
         <div className="text-center">
           <p className="text-zinc-300 font-medium text-sm mb-1">No GitHub username set</p>
-          <p className="text-zinc-500 text-xs">Connect your account to track your progress</p>
+          {isOwner && <p className="text-zinc-500 text-xs">Connect your account to track your progress</p>}
         </div>
-        <Link
-          to="/user_data?tab=platforms"
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f89f1b] hover:bg-[#e08e10] text-black text-sm font-semibold transition-colors"
-        >
-          <Settings size={14} />
-          Add in Settings
-        </Link>
+        {isOwner && (
+          <Link
+            to="/user_data?tab=platforms"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f89f1b] hover:bg-[#e08e10] text-black text-sm font-semibold transition-colors"
+          >
+            <Settings size={14} />
+            Add in Settings
+          </Link>
+        )}
       </div>
     );
   }
@@ -44,7 +46,7 @@ function GithubData({ githubData, userName }) {
   if (!githubData) {
     return (
       <div className="flex justify-center items-center w-full h-48 bg-[#151515] rounded-xl border border-[#2e2e2e] mb-5 text-zinc-400">
-        No GitHub stats found. Try syncing your profile.
+        No GitHub stats found.{isOwner && " Try syncing your profile."}
       </div>
     );
   }

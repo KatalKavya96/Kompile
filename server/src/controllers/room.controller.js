@@ -76,11 +76,14 @@ export const getRoomDetail = asyncHandler(async (req, res) => {
       200,
       {
         room,
-        members: members.map((m) => ({
+        viewerRole: membership.role,
+        canCreateContests: membership.role === "admin" || membership.canCreateContests,
+        members: members.filter((m) => m.userId).map((m) => ({
           userId: m.userId._id,
           username: m.userId.username,
           avatar: m.userId.avatar,
           role: m.role,
+          canCreateContests: Boolean(m.canCreateContests),
           joinedAt: m.joinedAt,
         })),
       },

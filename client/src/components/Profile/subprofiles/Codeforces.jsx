@@ -23,22 +23,24 @@ function getRankInfo(rating) {
   return CF_RANKS.find((r) => rating <= r.max) || CF_RANKS[CF_RANKS.length - 1];
 }
 
-function Codeforces({ CodeforcesData, userName }) {
+function Codeforces({ CodeforcesData, userName, isOwner = false }) {
   if (!userName) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 w-full h-56 bg-[#0d0d0d] rounded-xl border border-[#2e2e2e]">
         <img src="/assets/platformLogos/codeforces-logo.png" alt="Codeforces" className="w-10 h-10 opacity-40" />
         <div className="text-center">
           <p className="text-zinc-300 font-medium text-sm mb-1">No Codeforces username set</p>
-          <p className="text-zinc-500 text-xs">Connect your account to track your progress</p>
+          {isOwner && <p className="text-zinc-500 text-xs">Connect your account to track your progress</p>}
         </div>
-        <Link
-          to="/user_data?tab=platforms"
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f89f1b] hover:bg-[#e08e10] text-black text-sm font-semibold transition-colors"
-        >
-          <Settings size={14} />
-          Add in Settings
-        </Link>
+        {isOwner && (
+          <Link
+            to="/user_data?tab=platforms"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f89f1b] hover:bg-[#e08e10] text-black text-sm font-semibold transition-colors"
+          >
+            <Settings size={14} />
+            Add in Settings
+          </Link>
+        )}
       </div>
     );
   }

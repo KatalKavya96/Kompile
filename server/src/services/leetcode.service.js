@@ -59,18 +59,37 @@ const LEETCODE_CALENDAR_QUERY = `
   }
 `;
 
-export const fetchLeetcodeRawData = async (username) => {
-  const leetcodeClient = axios.create({
-    baseURL: LEETCODE_API_URL,
-    timeout: 10000,
-    headers: {
-      "Content-Type": "application/json",
-      Referer: "https://leetcode.com",
-      "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    },
-  });
+const leetcodeClient = axios.create({
+  baseURL: LEETCODE_API_URL,
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+    Referer: "https://leetcode.com",
+    "User-Agent":
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  },
+});
 
+export const fetchRecentLeetcodeAccepted = async (username) => {
+  const query = `
+    query recentAccepted($username: String!) {
+      recentAcSubmissionList(username: $username, limit: 10) {
+        id
+        titleSlug
+        timestamp
+      }
+    }
+  `;
+  const response = await leetcodeClient.post("", { query, variables: { username } })
+    .catch(() => { throw new ApiError(502, "LeetCode is unavailable. Try again shortly."); });
+  const submissions = response.data?.data?.recentAcSubmissionList;
+  if (!Array.isArray(submissions)) {
+    throw new ApiError(502, "LeetCode could not return recent accepted submissions.");
+  }
+  return submissions;
+};
+
+export const fetchLeetcodeRawData = async (username) => {
   let response;
   try {
     response = await leetcodeClient.post("", {

@@ -128,6 +128,12 @@ export default function Calendar({ eventInfo }) {
           color: #ffffff;
         }
 
+        @media (width < 640px) {
+          .fc .fc-toolbar-title { font-size: 1rem; }
+          .fc .fc-toolbar { margin-bottom: 0.75rem !important; }
+          .fc .fc-col-header-cell { font-size: 0.7rem; }
+        }
+
         .fc .fc-button {
           border-radius: 4px;
           padding: 0.3rem 0.5rem;
@@ -190,7 +196,7 @@ export default function Calendar({ eventInfo }) {
         }
       `}</style>
 
-      <div className="bg-[#141414] border border-[#2e2e2e] rounded-xl p-4 md:p-6 shadow-xl h-full flex flex-col">
+      <div className="bg-[#141414] border border-[#2e2e2e] rounded-xl p-4 max-sm:p-2 md:p-6 shadow-xl h-full flex flex-col">
         <FullCalendar
           plugins={[dayGridPlugin]}
           initialView="dayGridMonth"

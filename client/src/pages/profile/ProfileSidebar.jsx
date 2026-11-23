@@ -31,7 +31,7 @@ function ProfileSidebar({
   const initials = getInitials(userData.name || userData.username);
 
   return (
-    <div className="w-full lg:w-[380px] shrink-0 sticky top-[84px] min-h-[calc(100vh-120px)] bg-[#141414] rounded-2xl flex flex-col border border-white/[0.08] text-white shadow-2xl">
+    <div className="w-full lg:w-[380px] shrink-0 sticky top-[84px] min-h-[calc(100vh-120px)] max-lg:static max-lg:min-h-0 bg-[#141414] rounded-2xl flex flex-col border border-white/[0.08] text-white shadow-2xl">
       {/* Header / Avatar */}
       <div className="w-full p-6 border-b border-white/[0.06] flex flex-col items-center relative">
         {isOwner && (

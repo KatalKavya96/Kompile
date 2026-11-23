@@ -4,7 +4,7 @@ import DonutChart from "./../DonutChart.jsx";
 import HeatmapComponent from "./../HeatmapComponent.jsx";
 import DSATopicChart from "./../DSATopicChart.jsx";
 
-function UserStats({ allStats, techStack, showTopicAnalysis = true, noPlatformsLinked = false }) {
+function UserStats({ allStats, techStack, showTopicAnalysis = true, noPlatformsLinked = false, isOwner = false }) {
   return (
     <>
       <div className="flex flex-col gap-3">
@@ -16,17 +16,20 @@ function UserStats({ allStats, techStack, showTopicAnalysis = true, noPlatformsL
               <div>
                 <p className="text-sm font-semibold text-white mb-0.5">No platforms connected</p>
                 <p className="text-xs text-zinc-400 leading-relaxed">
-                  No LeetCode, Codeforces, or GitHub username set. Add your usernames to track your progress.
+                  No LeetCode, Codeforces, or GitHub username set.
+                  {isOwner && " Add your usernames to track your progress."}
                 </p>
               </div>
             </div>
-            <Link
-              to="/user_data?tab=platforms"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f89f1b] hover:bg-[#e08e10] text-black text-sm font-semibold transition-colors shrink-0"
-            >
-              <Settings size={14} />
-              Add in Settings
-            </Link>
+            {isOwner && (
+              <Link
+                to="/user_data?tab=platforms"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f89f1b] hover:bg-[#e08e10] text-black text-sm font-semibold transition-colors shrink-0"
+              >
+                <Settings size={14} />
+                Add in Settings
+              </Link>
+            )}
           </div>
         )}
 

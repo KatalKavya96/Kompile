@@ -15,16 +15,8 @@ const getPlatformUsername = (user, platformName) => {
   const entry = user.connectedPlatforms?.find(
     (p) => p.platform?.toLowerCase() === platformName.toLowerCase(),
   );
-  if (entry?.username) return entry.username;
-
-  if (platformName === "leetcode" && user.leetcodeUsername)
-    return user.leetcodeUsername;
-  if (platformName === "codeforces" && user.codeforcesUsername)
-    return user.codeforcesUsername;
-  if (platformName === "github" && user.githubUsername)
-    return user.githubUsername;
-
-  return null;
+  const username = entry?.username?.trim() || user[`${platformName}Username`]?.trim();
+  return username || null;
 };
 
 const syncPlatform = async ({
@@ -128,72 +120,84 @@ export const syncCodeforcesProfile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, profile, "Codeforces profile synced"));
 });
 
-export const syncAllProfiles = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
-  if (!user) throw new ApiError(404, "User not found");
+const platforms = {
+  leetcode: { fetchRaw: fetchLeetcodeRawData, transform: transformLeetcodeResponse },
+  codeforces: { fetchRaw: fetchCodeforcesData, transform: transformCodeforcesResponse },
+  github: { fetchRaw: fetchGithubRawData, transform: transformGithubResponse },
+};
 
-  const promises = [];
+const activeSyncs = new Map();
+const platformNames = { leetcode: "LeetCode", codeforces: "Codeforces", github: "GitHub" };
 
-  const leetcodeUsername = getPlatformUsername(user, "leetcode");
-  if (leetcodeUsername) {
-    promises.push(
-      syncPlatform({
-        userId: user._id,
-        platform: "leetcode",
-        username: leetcodeUsername,
-        fetchRaw: fetchLeetcodeRawData,
-        transform: transformLeetcodeResponse,
-      }),
-    );
-  }
+async function syncConnectedProfiles(user, calendar) {
+  const connected = Object.entries(platforms).flatMap(([platform, config]) => {
+    const username = getPlatformUsername(user, platform);
+    return username ? [{ userId: user._id, platform, username, ...config }] : [];
+  });
 
-  const codeforcesUsername = getPlatformUsername(user, "codeforces");
-  if (codeforcesUsername) {
-    promises.push(
-      syncPlatform({
-        userId: user._id,
-        platform: "codeforces",
-        username: codeforcesUsername,
-        fetchRaw: fetchCodeforcesData,
-        transform: transformCodeforcesResponse,
-      }),
-    );
-  }
-
-  const githubUsername = getPlatformUsername(user, "github");
-  if (githubUsername) {
-    promises.push(
-      syncPlatform({
-        userId: user._id,
-        platform: "github",
-        username: githubUsername,
-        fetchRaw: fetchGithubRawData,
-        transform: transformGithubResponse,
-      }),
-    );
-  }
-
-  if (promises.length === 0) {
+  if (!connected.length && !calendar) {
     throw new ApiError(400, "No platforms connected for this user");
   }
 
-  const results = await Promise.allSettled(promises);
-
-  const failed = results.filter((r) => r.status === "rejected");
-  if (failed.length > 0) {
-    console.error(
-      "Some platform syncs failed:",
-      failed.map((f) => f.reason),
-    );
+  let due = connected;
+  if (calendar && connected.length) {
+    const profiles = await PlatformProfile.find({
+      userId: user._id,
+      platform: { $in: connected.map(({ platform }) => platform) },
+      syncStatus: "success",
+    })
+      .select("platform handle lastSyncedAt")
+      .lean();
+    const today = calendar.format(new Date());
+    due = connected.filter(({ platform, username }) => !profiles.some((profile) =>
+      profile.platform === platform && profile.handle === username &&
+      profile.lastSyncedAt && calendar.format(profile.lastSyncedAt) === today,
+    ));
   }
 
+  if (!due.length) return { attempted: 0, failed: 0, failedPlatforms: [] };
+  const results = await Promise.allSettled(due.map(syncPlatform));
+  const failures = results.flatMap((result, index) => result.status === "rejected"
+    ? [{ platform: due[index].platform, reason: result.reason?.message }]
+    : []);
+  if (failures.length) {
+    console.error("Some platform syncs failed:", failures);
+  }
   await recomputeUserStats(user._id);
+  return {
+    attempted: due.length,
+    failed: failures.length,
+    failedPlatforms: failures.map(({ platform }) => platform),
+  };
+}
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, null, "All platform profiles synced successfully"),
-    );
+export const syncAllProfiles = asyncHandler(async (req, res) => {
+  const { onlyIfDue, timeZone } = req.body ?? {};
+  let calendar;
+  if (onlyIfDue === true) {
+    try {
+      if (typeof timeZone !== "string" || !timeZone) throw new RangeError();
+      calendar = new Intl.DateTimeFormat("en-CA", { dateStyle: "short", timeZone });
+    } catch {
+      throw new ApiError(400, "A valid time zone is required for daily sync.");
+    }
+  }
+
+  const user = await User.findById(req.user._id);
+  if (!user) throw new ApiError(404, "User not found");
+
+  const key = String(user._id);
+  let sync = activeSyncs.get(key);
+  if (!sync) {
+    sync = syncConnectedProfiles(user, calendar).finally(() => activeSyncs.delete(key));
+    activeSyncs.set(key, sync);
+  }
+  const result = await sync;
+  const message = result.failed
+    ? `Could not sync ${result.failedPlatforms.map((platform) => platformNames[platform]).join(", ")}. You can try again.`
+    : result.attempted ? "All platform profiles synced successfully" : "No profile sync needed";
+
+  return res.status(200).json(new ApiResponse(200, result, message));
 });
 
 export const getUserStats = asyncHandler(async (req, res) => {
@@ -251,27 +255,13 @@ export const getSpecificPlatformData = asyncHandler(async (req, res) => {
   });
 
   if (
-    !profile ||
-    profile.syncStatus !== "success" ||
-    profile.handle !== platformUsername ||
-    !profile.stats?.activeDays
+    req.query.cached !== "true" &&
+    (!profile ||
+      profile.syncStatus !== "success" ||
+      profile.handle !== platformUsername ||
+      !profile.stats?.activeDays)
   ) {
-    const platformConfig = {
-      leetcode: {
-        fetchRaw: fetchLeetcodeRawData,
-        transform: transformLeetcodeResponse,
-      },
-      codeforces: {
-        fetchRaw: fetchCodeforcesData,
-        transform: transformCodeforcesResponse,
-      },
-      github: {
-        fetchRaw: fetchGithubRawData,
-        transform: transformGithubResponse,
-      },
-    };
-
-    const config = platformConfig[platform];
+    const config = platforms[platform];
     if (config) {
       try {
         profile = await syncPlatform({
@@ -291,7 +281,7 @@ export const getSpecificPlatformData = asyncHandler(async (req, res) => {
     }
   }
 
-  if (!profile || profile.syncStatus === "failed") {
+  if (!profile || profile.handle !== platformUsername || (profile.syncStatus === "failed" && req.query.cached !== "true")) {
     throw new ApiError(
       404,
       `Failed to fetch ${platform} profile stats for username '${platformUsername}'.`,

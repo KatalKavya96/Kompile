@@ -8,6 +8,15 @@ import {
   getRoomDetail,
 } from "../controllers/room.controller.js";
 import {
+  createRoomContest,
+  endRoomContest,
+  getContestCatalog,
+  getContestLeaderboard,
+  listRoomContests,
+  setContestPermission,
+  verifyContestSolve,
+} from "../controllers/roomContest.controller.js";
+import {
   createRoomValidator,
   joinRoomValidator,
   roomIdValidator,
@@ -28,5 +37,16 @@ router
 router
   .route("/:roomId/leave")
   .post(verifyJWT, roomIdValidator(), validate, leaveRoomHandler);
+
+const contestAccess = [verifyJWT, roomIdValidator(), validate];
+
+router.route("/:roomId/contests")
+  .get(...contestAccess, listRoomContests)
+  .post(...contestAccess, createRoomContest);
+router.get("/:roomId/contests/catalog", ...contestAccess, getContestCatalog);
+router.get("/:roomId/contests/:contestId/leaderboard", ...contestAccess, getContestLeaderboard);
+router.post("/:roomId/contests/:contestId/end", ...contestAccess, endRoomContest);
+router.post("/:roomId/contests/:contestId/questions/:questionId/verify", ...contestAccess, verifyContestSolve);
+router.patch("/:roomId/members/:userId/contest-permission", ...contestAccess, setContestPermission);
 
 export default router;

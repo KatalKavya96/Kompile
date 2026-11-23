@@ -2,7 +2,6 @@ import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { useContext } from "react";
 import { Toaster } from "react-hot-toast";
 import { useTodayContestToasts } from "./components/hooks/useTodayContestToasts.jsx";
-import MobileBlocker from "./components/MobileBlocker.jsx";
 import { UserContext } from "./context/UserContext.jsx";
 import Home from "./pages/app/Home.jsx";
 import LandingPage from "./pages/LandingPage/LandingPage.jsx";
@@ -101,7 +100,6 @@ function App() {
           },
         }}
       />
-      <MobileBlocker />
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<LandingPage />} />
