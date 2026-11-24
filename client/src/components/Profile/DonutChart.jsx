@@ -1,17 +1,16 @@
 import React from "react";
 
-function DonutChart({ easy = 0, medium = 0, hard = 0 }) {
-  const total = easy + medium + hard;
+function DonutChart({ easy = 0, medium = 0, hard = 0, extraSegments = [] }) {
+  const segments = [
+    ...extraSegments,
+    { count: easy, color: "#22c55e" },
+    { count: medium, color: "#f89f1b" },
+    { count: hard, color: "#ef4444" },
+  ];
+  const total = segments.reduce((sum, { count }) => sum + count, 0);
   const r = 42;
   const circ = 2 * Math.PI * r;
-
-  const easyDash = total ? (easy / total) * circ : 0;
-  const mediumDash = total ? (medium / total) * circ : 0;
-  const hardDash = total ? (hard / total) * circ : 0;
-
-  const easyOffset = 0;
-  const mediumOffset = -easyDash;
-  const hardOffset = -(easyDash + mediumDash);
+  let offset = 0;
 
   return (
     <svg width="110" height="110" viewBox="0 0 110 110" className="shrink-0">
@@ -24,44 +23,26 @@ function DonutChart({ easy = 0, medium = 0, hard = 0 }) {
         strokeWidth="10"
       />
 
-      <circle
-        cx="55"
-        cy="55"
-        r={r}
-        fill="none"
-        stroke="#22c55e"
-        strokeWidth="10"
-        strokeDasharray={`${easyDash} ${circ}`}
-        strokeDashoffset={easyOffset}
-        strokeLinecap="butt"
-        transform="rotate(-90 55 55)"
-      />
-
-      <circle
-        cx="55"
-        cy="55"
-        r={r}
-        fill="none"
-        stroke="#f89f1b"
-        strokeWidth="10"
-        strokeDasharray={`${mediumDash} ${circ}`}
-        strokeDashoffset={mediumOffset}
-        strokeLinecap="butt"
-        transform="rotate(-90 55 55)"
-      />
-
-      <circle
-        cx="55"
-        cy="55"
-        r={r}
-        fill="none"
-        stroke="#ef4444"
-        strokeWidth="10"
-        strokeDasharray={`${hardDash} ${circ}`}
-        strokeDashoffset={hardOffset}
-        strokeLinecap="butt"
-        transform="rotate(-90 55 55)"
-      />
+      {segments.map(({ count, color }) => {
+        if (!count) return null;
+        const dash = (count / total) * circ;
+        const dashOffset = offset;
+        offset -= dash;
+        return (
+          <circle
+            key={color}
+            cx="55"
+            cy="55"
+            r={r}
+            fill="none"
+            stroke={color}
+            strokeWidth="10"
+            strokeDasharray={`${dash} ${circ}`}
+            strokeDashoffset={dashOffset}
+            transform="rotate(-90 55 55)"
+          />
+        );
+      })}
 
       <text
         x="55"

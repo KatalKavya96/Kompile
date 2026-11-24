@@ -35,6 +35,12 @@ export const getUserGitHubStats = async (username, { cached } = {}) => {
   return data;
 };
 
+export const getUserGfgStats = async (username, { cached } = {}) => {
+  const url = username ? `platforms/gfg/${encodeURIComponent(username)}` : "platforms/gfg";
+  const { data } = await axiosInstance.get(url, { params: { cached } });
+  return data;
+};
+
 export const getAllUserStats = async (username) => {
   const url = username ? `platforms/stats/${username}` : "platforms/stats";
   const { data } = await axiosInstance.get(url);

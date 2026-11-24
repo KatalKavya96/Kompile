@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { UserContext } from "../../context/UserContext";
 import { UserCog, RefreshCw } from "lucide-react";
 import { NavLink, useParams } from "react-router-dom";
+import GfgData from "../../components/Profile/subprofiles/GfgData.jsx";
 import GithubData from "../../components/Profile/subprofiles/GithubData.jsx";
 import LeetcodeData from "../../components/Profile/subprofiles/LeetcodeData.jsx";
 import CodeforcesData from "../../components/Profile/subprofiles/Codeforces.jsx";
@@ -15,10 +16,27 @@ import {
   getUserLeetCodeStats,
   getUserGitHubStats,
   getUserCodeForcesStats,
+  getUserGfgStats,
   syncAll,
 } from "../../api/platformApi.js";
 
 const syncToastId = "profile-sync";
+
+function readAutoSyncDay(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function saveAutoSyncDay(key, day) {
+  try {
+    localStorage.setItem(key, day);
+  } catch {
+    // The server still enforces the daily limit when storage is unavailable.
+  }
+}
 
 function Profile() {
   const { username } = useParams();
@@ -28,6 +46,7 @@ function Profile() {
   const [kompileCardActive, setKompileCardActive] = useState(false);
   const [leetcodeData, setLeetCodeData] = useState();
   const [codeforcesData, setCodeforcesData] = useState();
+  const [gfgData, setGfgData] = useState();
   const [githubData, setGitHubData] = useState();
   const [allStats, setAllStats] = useState();
   const [isStatsLoading, setIsStatsLoading] = useState(true);
@@ -57,6 +76,7 @@ function Profile() {
     leetcodeUsername: "",
     codeforcesUsername: "",
     githubUsername: "",
+    gfgUsername: "",
   });
 
   const targetUsername = username || user?.username;
@@ -67,12 +87,13 @@ function Profile() {
   const fetchAllStats = async (uname, isCurrent = () => true) => {
     setIsStatsLoading(true);
     try {
-      const [allStatsRes, leetcode, github, codeforces] =
+      const [allStatsRes, leetcode, github, codeforces, gfg] =
         await Promise.allSettled([
           getAllUserStats(uname),
           getUserLeetCodeStats(uname, { cached: true }),
           getUserGitHubStats(uname, { cached: true }),
           getUserCodeForcesStats(uname, { cached: true }),
+          getUserGfgStats(uname, { cached: true }),
         ]);
 
       if (!isCurrent()) return;
@@ -87,6 +108,7 @@ function Profile() {
       setGitHubData(
         github.status === "fulfilled" ? github.value.data.profile : null,
       );
+      setGfgData(gfg.status === "fulfilled" ? gfg.value.data.profile : null);
       setCodeforcesData(
         codeforces.status === "fulfilled"
           ? codeforces.value.data.profile
@@ -170,6 +192,7 @@ function Profile() {
         leetcodeUsername,
         codeforcesUsername,
         githubUsername,
+        gfgUsername: userObj.connectedPlatforms?.find((item) => item.platform === "gfg")?.username || "",
       });
     } catch (error) {
       if (isCurrent()) toast.error(error.response?.data?.message || "Failed to fetch user data");
@@ -184,13 +207,17 @@ function Profile() {
 
     async function loadStats() {
       setIsStatsLoading(true);
-      if (isOwner) {
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const today = new Intl.DateTimeFormat("en-CA", { dateStyle: "short", timeZone }).format(new Date());
+      const syncKey = `kompile:profile-auto-sync:${targetUsername.toLowerCase()}`;
+      if (isOwner && readAutoSyncDay(syncKey) !== today) {
         setIsSyncing(true);
         try {
           const response = await syncAll({
             onlyIfDue: true,
-            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            timeZone,
           });
+          saveAutoSyncDay(syncKey, today);
           if (current && response.data?.failed) toast.error(response.message, { id: syncToastId });
         } catch (error) {
           if (current) toast.error(error.response?.data?.message || "Automatic profile sync failed", { id: syncToastId });
@@ -282,6 +309,16 @@ function Profile() {
                 Codeforces
               </button>
               <button
+                onClick={() => setActiveTab("gfg")}
+                className={`px-5 py-2 text-sm font-medium transition-all duration-200 border-b-2 -mb-px ${
+                  activeTab === "gfg"
+                    ? "border-[#f89f1b] text-[#f89f1b]"
+                    : "border-transparent text-[#888] hover:text-white"
+                }`}
+              >
+                GeeksforGeeks
+              </button>
+              <button
                 onClick={() => setActiveTab("github")}
                 className={`px-5 py-2 text-sm font-medium transition-all duration-200 border-b-2 -mb-px ${
                   activeTab === "github"
@@ -308,6 +345,7 @@ function Profile() {
                       noPlatformsLinked={
                         !userData.leetcodeUsername &&
                         !userData.codeforcesUsername &&
+                        !userData.gfgUsername &&
                         !userData.githubUsername
                       }
                     />
@@ -324,6 +362,13 @@ function Profile() {
                       isOwner={isOwner}
                       CodeforcesData={codeforcesData}
                       userName={userData.codeforcesUsername}
+                    />
+                  )}
+                  {activeTab === "gfg" && (
+                    <GfgData
+                      isOwner={isOwner}
+                      profile={gfgData}
+                      username={userData.gfgUsername}
                     />
                   )}
                   {activeTab === "github" && (

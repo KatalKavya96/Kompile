@@ -4,6 +4,7 @@ import {
   syncGithubProfile,
   syncLeetcodeProfile,
   syncCodeforcesProfile,
+  syncGfgProfile,
   syncAllProfiles,
   getUserStats,
   getSpecificPlatformData,
@@ -14,6 +15,7 @@ const router = Router();
 router.route("/sync/github").post(verifyJWT, syncGithubProfile);
 router.route("/sync/leetcode").post(verifyJWT, syncLeetcodeProfile);
 router.route("/sync/codeforces").post(verifyJWT, syncCodeforcesProfile);
+router.route("/sync/gfg").post(verifyJWT, syncGfgProfile);
 router.route("/sync/all").post(verifyJWT, syncAllProfiles);
 
 router.route("/stats").get(verifyJWT, getUserStats);

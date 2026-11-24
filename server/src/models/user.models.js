@@ -109,6 +109,7 @@ const userSchema = new Schema(
         connectedAt: { type: Date, default: Date.now },
       },
     ],
+    profileAutoSyncAttemptedAt: { type: Date, select: false },
     stats: {
       totalQuestions: { type: Number, default: 0 },
       totalActiveDays: { type: Number, default: 0 },
@@ -206,7 +207,7 @@ const platformProfileSchema = new Schema(
     handle: { type: String, required: true, trim: true },
     platform: {
       type: String,
-      enum: ["leetcode", "codeforces", "github"],
+      enum: ["leetcode", "codeforces", "github", "gfg"],
       required: true,
     },
     profileUrl: {
@@ -227,6 +228,12 @@ const platformProfileSchema = new Schema(
       hardSolved: { type: Number, default: 0 },
 
       activeDays: { type: Number, default: 0 },
+
+      // GeeksforGeeks
+      codingScore: Number,
+      monthlyScore: Number,
+      basicSolved: Number,
+      schoolSolved: Number,
 
       // github
       totalContributions: { type: Number, default: 0 },
