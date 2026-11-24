@@ -1,3 +1,5 @@
+import { fetchGfgRawData } from "../services/gfg.service.js";
+import { transformGfgResponse } from "../transformers/gfg.transformer.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
@@ -33,9 +35,8 @@ const syncPlatform = async ({
     transformed = transform(raw);
   } catch (err) {
     await PlatformProfile.findOneAndUpdate(
-      { userId, platform },
-      { $set: { syncStatus: "failed", lastSyncedAt: new Date() } },
-      { upsert: true },
+      { userId, platform, handle: username },
+      { $set: { syncStatus: "failed" } },
     );
     throw err;
   }
@@ -120,14 +121,33 @@ export const syncCodeforcesProfile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, profile, "Codeforces profile synced"));
 });
 
+export const syncGfgProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) throw new ApiError(404, "User not found");
+
+  const username = getPlatformUsername(user, "gfg");
+  if (!username) throw new ApiError(400, "No GeeksforGeeks username connected for this user");
+
+  const profile = await syncPlatform({
+    userId: user._id,
+    platform: "gfg",
+    username,
+    ...platforms.gfg,
+  });
+  await recomputeUserStats(user._id);
+  return res.status(200).json(new ApiResponse(200, profile, "GeeksforGeeks profile synced"));
+});
+
 const platforms = {
+  gfg: { fetchRaw: fetchGfgRawData, transform: transformGfgResponse },
   leetcode: { fetchRaw: fetchLeetcodeRawData, transform: transformLeetcodeResponse },
   codeforces: { fetchRaw: fetchCodeforcesData, transform: transformCodeforcesResponse },
   github: { fetchRaw: fetchGithubRawData, transform: transformGithubResponse },
 };
 
 const activeSyncs = new Map();
-const platformNames = { leetcode: "LeetCode", codeforces: "Codeforces", github: "GitHub" };
+const noSyncNeeded = { attempted: 0, failed: 0, failedPlatforms: [] };
+const platformNames = { gfg: "GeeksforGeeks", leetcode: "LeetCode", codeforces: "Codeforces", github: "GitHub" };
 
 async function syncConnectedProfiles(user, calendar) {
   const connected = Object.entries(platforms).flatMap(([platform, config]) => {
@@ -141,6 +161,18 @@ async function syncConnectedProfiles(user, calendar) {
 
   let due = connected;
   if (calendar && connected.length) {
+    const now = new Date();
+    const today = calendar.format(now);
+    const previousAttempt = user.profileAutoSyncAttemptedAt;
+    if (previousAttempt && calendar.format(previousAttempt) === today) return noSyncNeeded;
+
+    // Reserve the daily attempt before calling upstream platforms, even if a sync later fails.
+    const claim = await User.updateOne(
+      { _id: user._id, profileAutoSyncAttemptedAt: previousAttempt ?? null },
+      { $set: { profileAutoSyncAttemptedAt: now } },
+    );
+    if (!claim.matchedCount) return noSyncNeeded;
+
     const profiles = await PlatformProfile.find({
       userId: user._id,
       platform: { $in: connected.map(({ platform }) => platform) },
@@ -148,14 +180,13 @@ async function syncConnectedProfiles(user, calendar) {
     })
       .select("platform handle lastSyncedAt")
       .lean();
-    const today = calendar.format(new Date());
     due = connected.filter(({ platform, username }) => !profiles.some((profile) =>
       profile.platform === platform && profile.handle === username &&
       profile.lastSyncedAt && calendar.format(profile.lastSyncedAt) === today,
     ));
   }
 
-  if (!due.length) return { attempted: 0, failed: 0, failedPlatforms: [] };
+  if (!due.length) return noSyncNeeded;
   const results = await Promise.allSettled(due.map(syncPlatform));
   const failures = results.flatMap((result, index) => result.status === "rejected"
     ? [{ platform: due[index].platform, reason: result.reason?.message }]
@@ -183,16 +214,25 @@ export const syncAllProfiles = asyncHandler(async (req, res) => {
     }
   }
 
-  const user = await User.findById(req.user._id);
+  const user = await User.findById(req.user._id).select("+profileAutoSyncAttemptedAt");
   if (!user) throw new ApiError(404, "User not found");
 
   const key = String(user._id);
-  let sync = activeSyncs.get(key);
-  if (!sync) {
-    sync = syncConnectedProfiles(user, calendar).finally(() => activeSyncs.delete(key));
-    activeSyncs.set(key, sync);
+  let active = activeSyncs.get(key);
+  // A manual sync must still refresh every platform after an automatic sync.
+  while (!calendar && active?.automatic) {
+    await active.promise.catch(() => {});
+    active = activeSyncs.get(key);
   }
-  const result = await sync;
+
+  if (!active) {
+    active = {
+      automatic: Boolean(calendar),
+      promise: syncConnectedProfiles(user, calendar).finally(() => activeSyncs.delete(key)),
+    };
+    activeSyncs.set(key, active);
+  }
+  const result = await active.promise;
   const message = result.failed
     ? `Could not sync ${result.failedPlatforms.map((platform) => platformNames[platform]).join(", ")}. You can try again.`
     : result.attempted ? "All platform profiles synced successfully" : "No profile sync needed";
@@ -224,7 +264,7 @@ export const getSpecificPlatformData = asyncHandler(async (req, res) => {
   const { platform } = req.params;
   const username = req.params.username || req.query.username;
 
-  const VALID_PLATFORMS = ["leetcode", "codeforces", "github"];
+  const VALID_PLATFORMS = Object.keys(platforms);
   if (!VALID_PLATFORMS.includes(platform)) {
     throw new ApiError(
       400,
@@ -259,7 +299,7 @@ export const getSpecificPlatformData = asyncHandler(async (req, res) => {
     (!profile ||
       profile.syncStatus !== "success" ||
       profile.handle !== platformUsername ||
-      !profile.stats?.activeDays)
+      (platform !== "gfg" && !profile.stats?.activeDays))
   ) {
     const config = platforms[platform];
     if (config) {

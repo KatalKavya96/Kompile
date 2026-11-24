@@ -85,11 +85,14 @@ function Navbar() {
       <Link to="/" className="flex items-center gap-2 box-border">
         <img
           src="/assets/face-removebg-preview 1.png"
-          alt="logo image"
+          alt=""
           className="w-auto h-15 max-sm:h-11"
         />
         <h2 className="text-white font-black text-3xl max-sm:text-2xl">
-          Kom<span className="text-orange-500">pile</span>
+          <span className="sr-only">Kompile</span>
+          <span aria-hidden="true">
+            Komp<span className="relative">ı<span className="absolute left-1/2 top-[0.24em] size-[0.15em] -translate-x-1/2 rounded-full bg-orange-500" /></span>le
+          </span>
         </h2>
       </Link>
 

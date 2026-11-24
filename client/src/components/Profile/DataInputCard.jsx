@@ -1,6 +1,6 @@
 import React from "react";
 
-function DataInputCard({ logo, name, placeholder, link, value, onChange, onSubmit, showInput = true, buttonText = "Submit" }) {
+function DataInputCard({ logo, name, inputName, placeholder, link, value, onChange, onSubmit, showInput = true, buttonText = "Submit" }) {
   return (
     <>
       <form 
@@ -18,7 +18,7 @@ function DataInputCard({ logo, name, placeholder, link, value, onChange, onSubmi
           {showInput && (
             <input
               type="text"
-              name={name.toLowerCase() + "username"}
+              name={inputName ?? name.toLowerCase() + "username"}
               value={value}
               onChange={onChange}
               placeholder={placeholder}

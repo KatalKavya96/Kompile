@@ -80,7 +80,7 @@ function ProfileSidebar({
       </div>
 
       {/* Social Links */}
-      <div className="w-full py-4 px-6 border-b border-white/[0.06] flex justify-center gap-8 text-zinc-400">
+      <div className="w-full py-4 px-6 border-b border-white/[0.06] flex flex-wrap justify-center gap-4 text-zinc-400">
         {userData.leetcodeUsername && (
           <a
             href={`https://leetcode.com/${userData.leetcodeUsername}`}
@@ -115,6 +115,22 @@ function ProfileSidebar({
           </a>
         )}
 
+        {userData.gfgUsername && (
+          <a
+            href={`https://www.geeksforgeeks.org/user/${encodeURIComponent(userData.gfgUsername)}/`}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`GeeksforGeeks: ${userData.gfgUsername}`}
+            title={`GeeksforGeeks: ${userData.gfgUsername}`}
+            className="group flex flex-col items-center gap-1 hover:text-green-400 transition-colors"
+          >
+            <img src="/assets/platformLogos/GeeksForGeeks.png" width="26" height="26" alt="" />
+            <span className="max-w-20 truncate text-xs opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+              {userData.gfgUsername}
+            </span>
+          </a>
+        )}
+
         {userData.githubUsername && (
           <a
             href={`https://github.com/${userData.githubUsername}`}
@@ -134,6 +150,7 @@ function ProfileSidebar({
 
         {!userData.leetcodeUsername &&
           !userData.codeforcesUsername &&
+          !userData.gfgUsername &&
           !userData.githubUsername && (
             <span className="text-sm text-zinc-600 italic">
               No platforms connected

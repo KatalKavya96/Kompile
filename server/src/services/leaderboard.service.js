@@ -42,9 +42,10 @@ export const buildLeaderboard = async ({
   }
 
   const skip = (page - 1) * limit;
+  const solvedQuestions = { "stats.totalQuestions": { $gt: 0 } };
 
   if (metric === "totalQuestions") {
-    const filter = userIds ? { _id: { $in: userIds } } : {};
+    const filter = userIds ? { _id: { $in: userIds } } : solvedQuestions;
 
     const users = await User.find(filter)
       .select("username avatar stats.totalQuestions")
@@ -66,6 +67,36 @@ export const buildLeaderboard = async ({
 
   const match = { platform, "stats.contestRating": { $ne: null } };
   if (userIds) match.userId = { $in: userIds };
+
+  if (!userIds) {
+    const profiles = await PlatformProfile.aggregate([
+      { $match: match },
+      {
+        $lookup: {
+          from: User.collection.name,
+          localField: "userId",
+          foreignField: "_id",
+          pipeline: [
+            { $match: solvedQuestions },
+            { $project: { username: 1, avatar: 1 } },
+          ],
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $sort: { "stats.contestRating": -1 } },
+      { $skip: skip },
+      { $limit: limit },
+    ]);
+
+    return profiles.map(({ user, stats }, index) => ({
+      rank: skip + index + 1,
+      userId: user._id,
+      username: user.username,
+      avatar: user.avatar,
+      value: stats.contestRating,
+    }));
+  }
 
   const profiles = await PlatformProfile.find(match)
     .populate("userId", "username avatar")

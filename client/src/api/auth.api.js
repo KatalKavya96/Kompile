@@ -96,6 +96,7 @@ export const updateBasicInfo = async ({
   leetcodeusername,
   codeforcesusername,
   githubusername,
+  gfgusername,
 }) => {
   const { data } = await axiosInstance.put("/users/update-basic-info", {
     firstName,
@@ -110,6 +111,7 @@ export const updateBasicInfo = async ({
     leetcodeUsername: leetcodeusername,
     codeforcesUsername: codeforcesusername,
     githubUsername: githubusername,
+    gfgUsername: gfgusername,
   });
   return data;
 };

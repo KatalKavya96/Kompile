@@ -55,12 +55,12 @@ function UserData() {
       link: "https://leetcode.com/u/",
       placeholder: "johndoe",
     },
-    // {
-    //   name: "GeeksForGeeks",
-    //   logo: "/assets/platformLogos/GeeksForGeeks.png",
-    //   link: "https://www.geeksforgeeks.org/user/",
-    //   placeholder: "johndoe",
-    // },
+    {
+      name: "GeeksforGeeks",
+      logo: "/assets/platformLogos/GeeksForGeeks.png",
+      link: "https://www.geeksforgeeks.org/user/",
+      placeholder: "johndoe",
+    },
     // {
     //   name: "CodeChef",
     //   logo: "codechef-logo.png",
@@ -126,6 +126,7 @@ function UserData() {
         leetcodeusername: leetcodeUsername,
         codeforcesusername: codeforcesUsername,
         githubusername: githubUsername,
+        gfgusername: user.connectedPlatforms?.find((item) => item.platform === "gfg")?.username || "",
       });
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to fetch user data");
@@ -236,6 +237,7 @@ function UserData() {
                           key={platform.name}
                           logo={platform.logo}
                           name={platform.name}
+                          inputName={getPlatformKey(platform.name) + "username"}
                           link={platform.link}
                           placeholder={platform.placeholder}
                           value={
@@ -264,6 +266,7 @@ function UserData() {
                           key={platform.name}
                           logo={platform.logo}
                           name={platform.name}
+                          inputName={getPlatformKey(platform.name) + "username"}
                           link={platform.link}
                           placeholder={platform.placeholder}
                           value={
